@@ -54,7 +54,7 @@
   \titlepage
 \end{frame}
 
-\setbeamertemplate{background canvas}{} 
+\setbeamertemplate{background canvas}{}
 
 \section{Overview}
 \label{sec:overview}
@@ -148,9 +148,9 @@
           node[concept]{Energy balance}
           [clockwise from=-60]
           child[concept color=levelii]{ node[concept]{Bedrock thermal layer}}
-        } 
-        child[concept color=leveli]{ node[concept]{Stress balance} } 
-        child[concept color=leveli]{ node[concept]{Bed deformation} } 
+        }
+        child[concept color=leveli]{ node[concept]{Stress balance} }
+        child[concept color=leveli]{ node[concept]{Bed deformation} }
         child[concept color=leveli]{ node[concept]{Age} }
         child[concept color=leveli]{ node[concept]{Subglacial hydrology} }
         child[concept color=leveli]{ node[concept]{Sea level forcing} }
@@ -393,7 +393,7 @@
 
   Mention that the system solved by PISM has the same size independent
   from the current ice extent (trivial equations).
-  
+
   Nonlinear system of equations --- requires iteration. Describe the
   type of iteration employed by PISM (Picard, linearizing viscosity).
   Mention the alternative (Newton iteration in the FEM
@@ -423,5 +423,47 @@
 
   Talk about inputs and outputs, tying this to hydrology.
 \end{frame}
+
+\section{Age}
+\label{sec:age}
+
+\begin{frame}{Age}
+  Numerical diffusivity is a concern.
+
+  Implementation details are the same as in the energy balance code.
+
+  Boundary conditions: 0 at the top surface and at the bottom surface
+  with freezing conditions.
+\end{frame}
+
+\section{Subglacial hydrology}
+\label{sec:subglacial-hydrology}
+
+\begin{frame}{Subglacial hydrology}
+
+  \begin{itemize}
+  \item ``Null'' transport: water stored in till, no water conservation
+  \item ``Routing'' model: water is stored in till; excess is
+    transported along pressure gradient (water pressure assumed equal
+    to overburden)
+  \item ``Distributed'' model: same as ``routing,'' but with a
+    physical model of the water pressure
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Subglacial hydrology: challenges}
+  \begin{itemize}
+  \item vastly different time scale compared to ice flow
+  \item poorly constrained model parameters (observations are sparse)
+  \item the theory is not mature (no \emph{continuum} model of
+    subglacial water transport in channels)
+  \end{itemize}
+\end{frame}
+
+\note{
+
+  Cite Ed's paper.
+
+}
 
 \end{document}
