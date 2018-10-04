@@ -291,4 +291,137 @@
   \end{itemize}
 \end{frame}
 
+\section{Environmental forcing}
+\label{sec:environment}
+
+\begin{frame}{Environmental forcing}
+  \begin{itemize}
+  \item Top surface
+  \item Bottom surface
+  \item Shelf base
+  \item Sea level
+  \end{itemize}
+\end{frame}
+
+\section{Energy balance}
+\label{sec:energy-balance}
+
+\begin{frame}{Energy balance in the ice volume}
+  \begin{itemize}
+  \item \emph{shallow} conduction-advection equation
+    \begin{equation}
+      \label{eq:1}
+      FIXME
+    \end{equation}
+  \item non-linear conductivity (function of enthalpy)
+  \item implicit in the vertical dimension, explicit in horizontal
+  \item first order upwinding for advecion
+  \item has a CFL time step restriction using 3D $u$ and $v$
+    components of the ice velocity
+  \end{itemize}
+\end{frame}
+
+\note{
+  Mention the legacy model: temperature-based energy conservation.
+
+  Mention Aschwanden et al.
+
+  Talk about inputs and outputs, drainage.
+
+  Mention PISM's vertical coordinate.
+
+  Mention (or maybe add a slide about) initialization difficulties:
+  spinups, heuristics, data assimilation.
+
+}
+
+\begin{frame}{Energy balance: boundary conditions}
+  \begin{itemize}
+  \item top surface: Dirichlet
+  \item bottom surface: Dirichlet or Neumann
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Bedrock thermal layer}
+  Models the temperature in a thin ($\tilde 1000$ km) layer a the top
+  of the Earth's crust.
+
+  \begin{itemize}
+  \item Assumes that this layer is \emph{shallow}: horizontal
+    conduction terms are ignored, i.e. columns of bedrock are treated
+    as independent.
+  \item Uses a regular grid in bedrock columns, fully implicit, no
+    time-step restriction.
+  \end{itemize}
+\end{frame}
+
+\note{
+  The bedrock thermal layer has the largest effect in simulations
+  with moving boundaries: edges of ice streams, grounding lines, and
+  grounded margins.
+
+  FIXME: talk about inputs and outputs.
+}
+
+\section{Stress balance}
+\label{sec:stress-balance}
+
+\begin{frame}{Stress balance}
+  General organization of PISM's stress balance code (sliding +
+  deformation -> (u,v)), the hybrid, $w$ through incompressibility.
+
+  Rheology: Glen-type flow laws \emph{that have a viscosity form}.
+
+  Inputs and outputs (important!).
+\end{frame}
+
+\note{
+
+  Note to self: double-check that our strain heating computation is
+  correct: should use $w$, not $w_{\text{rel}}$.
+
+}
+
+\begin{frame}{Shallow ice approximation (SIA)}
+
+  Local in space (2D).
+
+  Bed smoother.
+\end{frame}
+
+\begin{frame}{Shallow shelf approximation (SSA)}
+
+  Mention that the system solved by PISM has the same size independent
+  from the current ice extent (trivial equations).
+  
+  Nonlinear system of equations --- requires iteration. Describe the
+  type of iteration employed by PISM (Picard, linearizing viscosity).
+  Mention the alternative (Newton iteration in the FEM
+  implementation). Mention challenges of implementing the FEM solver:
+  domain shape.
+
+  Basal (sliding) velocity is \emph{not} prescribed.
+
+  Sliding laws.
+
+  Talk about boundary conditions, grounding line transition
+  (``grounded cell fraction'').
+
+  Challenges:
+  \begin{itemize}
+  \item stopping criterion
+  \item robustness
+  \item computational cost
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Basal yield stress models}
+  \begin{itemize}
+  \item Mohr-Coulomb
+  \item constant
+  \end{itemize}
+
+  Talk about inputs and outputs, tying this to hydrology.
+\end{frame}
+
 \end{document}
