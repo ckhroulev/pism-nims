@@ -61,7 +61,8 @@
 \section{Overview}
 \label{sec:overview}
 
-\begin{frame}{The basics}
+\begin{frame}
+  \frametitle{The basics}
 
   \begin{columns}
     \begin{column}{0.5\linewidth}
@@ -103,7 +104,8 @@
   mentioning.
 }
 
-\begin{frame}{Free boundaries}
+\begin{frame}
+  \frametitle{Free boundaries}
   Both ice thickness and its extent can change, meaning that PISM has
   to deal with two kinds of free boundaries:
 
@@ -117,7 +119,8 @@
   Lateral: a cell is either icy or not, except for ``partially-filled'' cells.
 }
 
-\begin{frame}{Free boundary at the top surface and the vertical coordinate}
+\begin{frame}
+  \frametitle{Free boundary at the top surface and the vertical coordinate}
   There are two common approaches:
   \begin{itemize}
   \item sigma-coordinate
@@ -157,7 +160,8 @@
 \section{Sub-models}
 \label{sec:sub-models}
 
-\begin{frame}{Sub-models}
+\begin{frame}
+  \frametitle{Sub-models}
 
   % PuBu
   \definecolor{levelo}{RGB}{5,112,176}
@@ -206,7 +210,8 @@
   These are the parts PISM consists of, conceptually.
 }
 
-\begin{frame}{Universal considerations}
+\begin{frame}
+  \frametitle{Universal considerations}
   \begin{itemize}
   \item inputs and outputs
   \item initialization
@@ -220,7 +225,8 @@
 \section{Time stepping}
 \label{sec:time-stepping}
 
-\begin{frame}{Explicit time stepping in an ice sheet model}
+\begin{frame}
+  \frametitle{Explicit time stepping in an ice sheet model}
 
   \begin{enumerate}
   \item use stress balance to compute velocity
@@ -238,14 +244,10 @@
   \item update surface elevation: $h \gets h + \diff{H}{t} \Delta t$
   \item repeat at 1.
   \end{enumerate}
-
-  \bigskip
-  \begin{itemize}
-  \item this paradigm \emph{is} explicit time stepping of the whole model
-  \end{itemize}
 \end{frame}
 
-\begin{frame}{PISM's time step}
+\begin{frame}
+  \frametitle{PISM's time step}
   Update...
   \begin{enumerate}
   \item basal yield stress
@@ -266,7 +268,8 @@
 \section{Stress balance}
 \label{sec:stress-balance}
 
-\begin{frame}{Stress balance}
+\begin{frame}
+  \frametitle{Stress balance}
 
   PISM's ``hybrid'' stress balance:
   \begin{enumerate}
@@ -276,7 +279,7 @@
 
   Vertical velocity is approximated using incompressibility of ice.
 
-  PISM supports \emph{that have a viscosity form}.
+  PISM supports Glen-like flow laws \emph{that have a viscosity form}.
 
 \end{frame}
 
@@ -289,7 +292,8 @@
 \subsection{SIA}
 \label{sec:sia}
 
-\begin{frame}{Shallow ice approximation (SIA)}
+\begin{frame}
+  \frametitle{Shallow ice approximation (SIA)}
 
   \begin{align}
     \label{eq:2}
@@ -303,19 +307,26 @@
 
 \end{frame}
 
-\begin{frame}{Schoof's parameterized bed roughness technique}
-  Modifies the diffusivity of the SIA flow.
+\begin{frame}
+  \frametitle{Schoof's parameterized bed roughness technique}
 
-  Cite Schoof's paper.
+  Modifies (reduces!) the diffusivity of the SIA flow.
 
-  See the User's Manual and C. Schoof. A variational approach to ice
-  stream flow. \emph{J. Fluid Mech}., 556:227–251, 2006 for details.
+  \begin{itemize}
+  \item is an improvement compared to SIA
+  \item reduces diffusivity, making longer time steps possible
+  \end{itemize}
+
+  See the User's Manual and C. Schoof. The effect of basal topography
+  on ice sheet dynamics. \emph{Continuum Mech. Thermodyn.},
+  15:295–307, 2003 for details.
 \end{frame}
 
 \subsection{SSA}
 \label{sec:ssa}
 
-\begin{frame}{Shallow shelf approximation (SSA)}
+\begin{frame}
+  \frametitle{Shallow shelf approximation (SSA)}
 
   \begin{align}
     -\left[ 2\bar\nu H\left( 2u_{x} + v_{y}\right)\right]_{x} - \left[\bar\nu
@@ -324,7 +335,7 @@
     H\left(u_{x}+2v_{y}  \right) \right]_{y} - \tau_{(b)2} &= -\rho gH h_{y}
   \end{align}
 
-  Here both $\bar \nu$ and $\tau_{b}$ are functions of the ice velocity.
+  Here both $\bar \nu$ and $\tau_{b}$ are nonlinear functions of the ice velocity.
 
   Boundary conditions at lateral boundaries:
   \begin{equation}
@@ -337,29 +348,7 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{SSA: implementation details}
-
-  PISM uses Picard iteration to solve the non-linear system
-  corresponding to the discretization of the SSA system of equations:
-
-  \begin{equation}
-    \label{eq:4}
-    A(U^{(k)}) U^{(k+1)} = b.
-  \end{equation}
-
-  Mention that the system solved by PISM has the same size independent
-  from the current ice extent (trivial equations).
-
-  Challenges:
-  \begin{itemize}
-  \item stopping criterion
-  \item robustness
-  \item computational cost
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Basal sliding laws}
+  \frametitle{Basal strength: sliding laws}
 
   \begin{itemize}
   \item Coulomb
@@ -377,7 +366,9 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Basal yield stress models}
+\begin{frame}
+  \frametitle{Basal strength: yield stress models}
+
   \begin{itemize}
   \item constant
   \item Mohr-Coulomb
@@ -410,10 +401,33 @@
 
 \end{frame}
 
+\begin{frame}
+  \frametitle{SSA: implementation details}
+
+  PISM uses Picard iteration to solve the non-linear system
+  corresponding to the discretization of the SSA system of equations:
+
+  \begin{equation}
+    \label{eq:4}
+    A(U^{(k)}) U^{(k+1)} = b.
+  \end{equation}
+
+  Mention that the system solved by PISM has the same size independent
+  from the current ice extent (trivial equations).
+
+  Challenges:
+  \begin{itemize}
+  \item stopping criterion
+  \item robustness
+  \item computational cost
+  \end{itemize}
+\end{frame}
+
 \section{Energy balance}
 \label{sec:energy-balance}
 
-\begin{frame}{Energy balance in the ice volume}
+\begin{frame}
+  \frametitle{Energy balance in the ice volume}
   \begin{itemize}
   \item \emph{shallow} conduction-advection equation
     \begin{equation}
@@ -442,7 +456,8 @@
 
 }
 
-\begin{frame}{Energy balance: boundary conditions}
+\begin{frame}
+  \frametitle{Energy balance: boundary conditions}
 
   \begin{columns}[c]
     \begin{column}{0.5\linewidth}
@@ -461,7 +476,8 @@
 \subsection{Bedrock thermal layer}
 \label{sec:bedrock}
 
-\begin{frame}{Bedrock thermal layer}
+\begin{frame}
+  \frametitle{Bedrock thermal layer}
   Models the temperature in a thin ($\tilde 1000$ km) layer a the top
   of the Earth's crust.
 
@@ -485,7 +501,8 @@
 \section{Geometry evolution}
 \label{sec:geometry-evolution}
 
-\begin{frame}{Mass transport}
+\begin{frame}
+  \frametitle{Mass transport}
   \begin{itemize}
   \item uses the finite-volume approach
   \item tailored to take advantage to PISM's split between
@@ -501,7 +518,9 @@
   inequality constraint, i.e. the variational inequality formulation.
 }
 
-\begin{frame}{Stability considerations}
+\begin{frame}
+  \frametitle{Stability considerations}
+
   The SIA flow is diffusive, so preserving staility of explicit time
   stepping forces us to respect diffusion-related time step
   restrictions.
@@ -528,7 +547,9 @@
   \end{equation}
 \end{frame}
 
-\begin{frame}{Free boundary at the calving front}
+\begin{frame}
+  \frametitle{Free boundary at the calving front}
+
   \begin{center}
     \includegraphics[width=0.8\textwidth]{albrecht-martin-figure-1}
 
@@ -543,7 +564,9 @@
 \subsection{Calving}
 \label{sec:calving}
 
-\begin{frame}{Calving}
+\begin{frame}
+  \frametitle{Calving}
+
   \begin{itemize}
   \item Geometric criteria
     \begin{itemize}
@@ -581,7 +604,9 @@
 \subsection{Iceberg elimination}
 \label{sec:iceberg-elimination}
 
-\begin{frame}{Iceberg elimination}
+\begin{frame}
+  \frametitle{Iceberg elimination}
+
   Why do we need this?
 
   \begin{itemize}
@@ -600,7 +625,8 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Iceberg elimination: technical details}
+\begin{frame}
+  \frametitle{Iceberg elimination: technical details}
 
   \begin{center}
     \includegraphics[width=0.9\textwidth]{icebergs.png}
@@ -615,7 +641,9 @@
 \section{Bed deformation}
 \label{sec:bed-deformation}
 
-\begin{frame}{Bed deformation}
+\begin{frame}
+  \frametitle{Bed deformation}
+
   \begin{itemize}
   \item pointwise isostasy
     \begin{equation}
@@ -634,7 +662,9 @@
   FIXME: Inputs, outputs, time scale
 \end{frame}
 
-\begin{frame}{Lingle-Clark bed deformation model}
+\begin{frame}
+  \frametitle{Lingle-Clark bed deformation model}
+
   \begin{itemize}
   \item the fundamental equation includes a pseudo-differential
     operator define using Fourier transform
@@ -654,7 +684,9 @@
 \section{Environmental forcing}
 \label{sec:environment}
 
-\begin{frame}{Environmental forcing}
+\begin{frame}
+  \frametitle{Environmental forcing}
+
   Sub-models providing boundary ``climatic''
 
   \begin{itemize}
@@ -670,7 +702,9 @@
 \section{Age}
 \label{sec:age}
 
-\begin{frame}{Age}
+\begin{frame}
+  \frametitle{Age}
+
   Numerical diffusivity is a concern.
 
   Implementation details are the same as in the energy balance code.
@@ -682,7 +716,8 @@
 \section{Subglacial hydrology}
 \label{sec:subglacial-hydrology}
 
-\begin{frame}{Subglacial hydrology}
+\begin{frame}
+  \frametitle{Subglacial hydrology}
 
   \begin{itemize}
   \item ``Null'' transport: water stored in till, no water conservation
@@ -694,7 +729,9 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Subglacial hydrology: challenges}
+\begin{frame}
+  \frametitle{Subglacial hydrology: challenges}
+
   \begin{itemize}
   \item vastly different time scale compared to ice flow
   \item poorly constrained model parameters (observations are sparse)
