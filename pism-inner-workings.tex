@@ -44,7 +44,7 @@
 \title{PISM: What does it do? And how does it work?}
 
 \author{C.~Khroulev}
-
+\institute{University of Alaska Fairbanks}
 \date{}
 
 \subject{The Parallel Ice Sheet Model}
@@ -62,13 +62,29 @@
 \label{sec:overview}
 
 \begin{frame}{The basics}
-  \begin{itemize}
-  \item uses a uniform Cartesian grid
-  \item High-resolution runs use a large number of unknowns, requiring
-    parallel I/O.
-  \item ... and a parallel domain decomposition to avoid running out
-    of memory
-  \end{itemize}
+
+  \begin{columns}
+    \begin{column}{0.5\linewidth}
+      PISM
+      \begin{itemize}
+      \item<1-> uses a uniform
+      \item<2-> cell-centered Cartesian grid
+      \item<3-> and a parallel domain decomposition to avoid running out
+        of memory
+      \item<4-> dividing the grid into smaller sub-grids.
+      \item<5> Access to ``ghost'' points requires parallel communication.
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.5\linewidth}
+      \only<1>{\includegraphics[width=0.75\linewidth]{grid-1}}
+      \only<2>{\includegraphics[width=0.75\linewidth]{grid-2}}
+      \only<3>{\includegraphics[width=0.75\linewidth]{grid-3}}
+      \only<4>{\includegraphics[width=0.75\linewidth]{grid-4}}
+      \only<5>{\includegraphics[width=0.75\linewidth]{grid-5}}
+    \end{column}
+  \end{columns}
+
 \end{frame}
 
 \note{
@@ -362,21 +378,20 @@
 \begin{frame}
   \frametitle{Grounding line treatment}
 
-  \begin{center}
-    \includegraphics[width=0.4\linewidth]{grounded-cell-fraction}
-  \end{center}
+  \only<1>{
+    \begin{center}
+      \includegraphics[width=0.4\linewidth]{grounded-cell-fraction}
+    \end{center}
+  }
 
-\end{frame}
+  \only<2>{
+    ... very similar to SEP1 in \emph{Hydrostatic grounding line
+      parameterization in ice sheet models} by Seroussi et al.
 
-\begin{frame}
-  \frametitle{Grounding line treatment}
-
-  ... very similar to SEP1 in \emph{Hydrostatic grounding line
-    parameterization in ice sheet models} by Seroussi et al.
-
-  \begin{center}
-    \includegraphics[width=0.4\linewidth]{Seroussi-SEP1}
-  \end{center}
+    \begin{center}
+      \includegraphics[width=0.4\linewidth]{Seroussi-SEP1}
+    \end{center}
+  }
 
 \end{frame}
 
