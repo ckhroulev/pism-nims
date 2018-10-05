@@ -1,4 +1,4 @@
-\documentclass[notes,intlimits]{beamer}
+\documentclass[hide notes,intlimits]{beamer}
 
 \mode<presentation>
 {
@@ -9,7 +9,7 @@
 % load packages
 \usepackage{multimedia}
 \usepackage[english]{babel}
-\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{pdfpages}
@@ -37,6 +37,8 @@
   \tikz{\node[inner sep=0pt,opacity=1.0]
     {\includegraphics[width=\paperwidth]{pism_beamer_shade_bg}};}
 }
+
+\newcommand{\diff}[2]{\frac{\partial #1}{\partial #2}}
 
 % title page
 \title{PISM: What does it do? And how does it work?}
@@ -186,22 +188,176 @@
 
 \begin{frame}{Explicit time stepping}
 
-\begin{enumerate}
+  \begin{enumerate}
   \item use stress balance to compute velocity
-      \begin{itemize}
-      \item often: first get $(u,v)$, then $w$ from incompressibility
-      \end{itemize}
+    \begin{itemize}
+    \item often: first get $(u,v)$, then $w$ from incompressibility
+    \end{itemize}
   \item somewhere in here do other processes: thermodynamics, basal melt, calving, \dots
   \item decide on time-step $\Delta t$ from diffusivity $D$ \hfill (\emph{or: fixed} $\Delta t$)
   \item from velocity, surface balance, and base balance do time-step of mass continuity equation to get $H_t$
   \item update surface elevation: $h \gets h+H_t \Delta t$
   \item repeat at 1.
-\end{enumerate}
+  \end{enumerate}
 
-\bigskip
-\begin{itemize}
-\item this paradigm \emph{is} explicit time stepping of the whole model
-\end{itemize}
+  \bigskip
+  \begin{itemize}
+  \item this paradigm \emph{is} explicit time stepping of the whole model
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{PISM's time step}
+  Update...
+  \begin{enumerate}
+  \item basal yield stress
+  \item stress balance (ice velocities)
+  \item the time step length using stability criteria
+  \item age of the ice
+  \item energy balance
+  \item ice geometry due to flow
+  \item sea level
+  \item sub-shelf boundary conditions
+  \item top-surface boundary conditions
+  \item ice geometry due to surface and basal mass balance
+  \item subglacial hydrology
+  \item bed deformation
+  \end{enumerate}
+\end{frame}
+
+\section{Stress balance}
+\label{sec:stress-balance}
+
+\begin{frame}{Stress balance}
+  General organization of PISM's stress balance code (sliding +
+  deformation -> (u,v)), the hybrid, $w$ through incompressibility.
+
+  Rheology: Glen-type flow laws \emph{that have a viscosity form}.
+
+  Inputs and outputs (important!).
+\end{frame}
+
+\note{
+
+  Note to self: double-check that our strain heating computation is
+  correct: should use $w$, not $w_{\text{rel}}$.
+
+}
+
+\subsection{SIA}
+\label{sec:sia}
+
+\begin{frame}{Shallow ice approximation (SIA)}
+
+  \begin{align}
+    \label{eq:2}
+    \frac{\partial H}{\partial t} &= S - \nabla \cdot (Q + \mathbf{U}_b H),\\
+    Q &= -D \nabla (b + H),\\
+    D &= 2\int_b^h F(z)P(z)(h-z)dz.
+  \end{align}
+
+  Can be computed at each grid point independently (using neighboring
+  points for FD approximations).
+
+\end{frame}
+
+\begin{frame}{Schoof's parameterized bed roughness technique}
+  Modifies the diffusivity of the SIA flow.
+
+  Cite Schoof's paper.
+
+  See the User's Manual and C. Schoof. A variational approach to ice
+  stream flow. \emph{J. Fluid Mech}., 556:227–251, 2006 for details.
+\end{frame}
+
+\subsection{SSA}
+\label{sec:ssa}
+
+\begin{frame}{Shallow shelf approximation (SSA)}
+
+  \begin{align}
+    -\left[ 2\bar\nu H\left( 2u_{x} + v_{y}\right)\right]_{x} - \left[\bar\nu
+    H\left(u_{y}+v_{x} \right) \right]_{y} - \tau_{(b)1} &= - \rho gH h_{x} \\
+    -\left[ \bar\nu H\left( u_{y} + v_{x} \right)\right]_{x} - \left[2\bar\nu
+    H\left(u_{x}+2v_{y}  \right) \right]_{y} - \tau_{(b)2} &= -\rho gH h_{y}
+  \end{align}
+
+  Here both $\bar \nu$ and $\tau_{b}$ are functions of the ice velocity.
+
+  Boundary conditions at lateral boundaries:
+  \begin{equation}
+    \label{eq:5}
+    \left.t\right|_{\text{cf}} \cdot \mathbf{n} = -p_{\text{o}} \mathbf{n}.
+  \end{equation}
+
+  Note: basal (sliding) velocity is \emph{not} prescribed.
+
+\end{frame}
+
+\note{
+
+  FIXME: talk about grounding line transition (``grounded cell
+  fraction'').
+
+}
+
+
+\begin{frame}
+  \frametitle{SSA: implementation details}
+
+  PISM uses Picard iteration to solve the non-linear system
+  corresponding to the discretization of the SSA system of equations:
+
+  \begin{equation}
+    \label{eq:4}
+    A(U^{(k)}) U^{(k+1)} = b.
+  \end{equation}
+
+  Mention that the system solved by PISM has the same size independent
+  from the current ice extent (trivial equations).
+
+  Challenges:
+  \begin{itemize}
+  \item stopping criterion
+  \item robustness
+  \item computational cost
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{SSA: an alternative implementation approach}
+
+  Mention the alternative (Newton iteration in the FEM
+  implementation). Mention challenges of implementing the FEM solver:
+  domain shape.
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Basal sliding laws}
+
+  \begin{itemize}
+  \item Coulomb
+
+    \begin{equation}
+      \label{eq:11}
+      |\boldsymbol{\tau}_b| \le \tau_c \quad \text{and} \quad \boldsymbol{\tau}_b =
+      - \tau_c \frac{\mathbf{u}}{|\mathbf{u}|} \quad\text{if and only if}\quad |\mathbf{u}| > 0.
+    \end{equation}
+  \item Pseudo-plastic
+  \begin{equation}
+    \label{eq:10}
+    \boldsymbol{\tau}_b =  - \tau_c \frac{\mathbf{u}}{u_{\text{threshold}}^q |\mathbf{u}|^{1-q}},
+  \end{equation}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Basal yield stress models}
+  \begin{itemize}
+  \item Mohr-Coulomb
+  \item constant
+  \end{itemize}
+
+  Talk about inputs and outputs, tying this to hydrology.
 \end{frame}
 
 \section{Geometry evolution}
@@ -228,19 +384,42 @@
   stepping forces us to respect diffusion-related time step
   restrictions.
 
-  FIXME: use equations to show that SIA \textbf{has} a diffusion.
+  Recall that
+  \begin{align}
+    \label{eq:2}
+    \frac{\partial H}{\partial t} &= S - \nabla \cdot (Q + \mathbf{U}_b H),\\
+    Q &= -D \nabla (b + H).\\
+  \end{align}
 
   This applies to other models, even if they don't use the shallow ice
   approximation.
 
-  This stability requirement forces PISM to take short time steps.
+  \begin{equation}
+    \label{eq:3}
+    \Delta t \le \cdot \Delta x^{2} / D_{\text{max}}.
+  \end{equation}
+
+  First-order upwinding for the advective part of the flux gives
+  \begin{equation}
+    \label{eq:6}
+    \Delta t \le 1 / ()
+  \end{equation}
 \end{frame}
 
 \begin{frame}{Free boundary at the calving front}
-  Using parially-filled cells to model moving calving fronts.
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{albrecht-martin-figure-1}
 
-  FIXME: add a figure from Torsten's paper.
+    \includegraphics[width=0.8\textwidth]{albrecht-martin-figure-2}
+  \end{center}
+
+  See T. Albrecht, M. Martin, M. Haseloff, R. Winkelmann, and A.
+  Levermann. Parameterization for subgrid-scale motion of ice-shelf
+  calving fronts. \emph{The Cryosphere}, 5:35–44, 2011 for details.
 \end{frame}
+
+\subsection{Calving}
+\label{sec:calving}
 
 \begin{frame}{Calving}
   \begin{itemize}
@@ -252,13 +431,33 @@
     \end{itemize}
   \item Stress-based
     \begin{itemize}
-    \item Eigencalving (FIXME: formula and reference)
-    \item von Mises (FIXME: formula and reference)
+    \item Eigen calving
+      \begin{equation}
+        \label{eq:7}
+        c = K\; \dot{\epsilon}_{_+}\; \dot{\epsilon}_{_-}\quad\text{and}\quad\dot{\epsilon}_{_\pm}>0\:.
+      \end{equation}
+      See \emph{Kinematic first-order calving law implies
+      potential for abrupt ice-shelf retreat} by Levermann et al.
+    \item von Mises
+      \begin{equation}
+        \label{eq:8}
+        c = |\mathbf{u}| \frac{\tilde{\sigma}}{\sigma_{max}},
+      \end{equation}
+      See \emph{Modeling of Store Gletscher’s calving dynamics, West
+        Greenland, in response to ocean thermal forcing.} by Morlighem
+      et al.
     \end{itemize}
-    Challenges: strain rates estimated using finite differences may be
-    of poor quality
   \end{itemize}
 \end{frame}
+
+\note{
+
+  Challenges: strain rates estimated using finite differences may be
+  of poor quality.
+}
+
+\subsection{Iceberg elimination}
+\label{sec:iceberg-elimination}
 
 \begin{frame}{Iceberg elimination}
   Why do we need this?
@@ -291,10 +490,51 @@
   \end{itemize}
 \end{frame}
 
+\section{Bed deformation}
+\label{sec:bed-deformation}
+
+\begin{frame}{Bed deformation}
+  \begin{itemize}
+  \item pointwise isostasy
+    \begin{equation}
+      \label{eq:9}
+      b(t,x,y) = b(0,x,y) - f \left[H(t,x,y) - H(0,x,y)\right].
+    \end{equation}
+  \item Lingle-Clark model (elastic plate lithosphere over viscous
+    half-space plus purely-elastic, spherical, layered,
+    self-gravitating earth)
+
+    \medskip
+    Only the first component (elastic plate lithosphere over viscous
+    half-space) is used in most of simulations.
+  \end{itemize}
+
+  FIXME: Inputs, outputs, time scale
+\end{frame}
+
+\begin{frame}{Lingle-Clark bed deformation model}
+  \begin{itemize}
+  \item the fundamental equation includes a pseudo-differential
+    operator define using Fourier transform
+  \item Fourier spectral collocation method with periodic boundaries
+    on an extended domain
+  \item no time step restriction
+  \item can be initialized using measured uplift rates
+  \item relatively cheap computationally
+  \item serial code
+  \end{itemize}
+
+  See E. Bueler, C. S. Lingle, and J. A. Kallen-Brown. Fast
+  computation of a viscoelastic deformable Earth model for ice sheet
+  simulation. \emph{Ann. Glaciol}., 46:97–105, 2007
+\end{frame}
+
 \section{Environmental forcing}
 \label{sec:environment}
 
 \begin{frame}{Environmental forcing}
+  Sub-models providing boundary ``climatic''
+
   \begin{itemize}
   \item Top surface
   \item Bottom surface
@@ -302,6 +542,8 @@
   \item Sea level
   \end{itemize}
 \end{frame}
+
+\note{FIXME: I need to say more about this.}
 
 \section{Energy balance}
 \label{sec:energy-balance}
@@ -311,7 +553,7 @@
   \item \emph{shallow} conduction-advection equation
     \begin{equation}
       \label{eq:1}
-      FIXME
+  \rho_{i} \left( \diff{E}{t} + w\,\diff{E}{z} \right) - \diff{}{z}\left( K(E) \diff{E}{z} \right) = Q - \rho_{i} \left( u\,\diff{E}{x} + v\,\diff{E}{y} \right).
     \end{equation}
   \item non-linear conductivity (function of enthalpy)
   \item implicit in the vertical dimension, explicit in horizontal
@@ -342,6 +584,9 @@
   \end{itemize}
 \end{frame}
 
+\subsection{Bedrock thermal layer}
+\label{sec:bedrock}
+
 \begin{frame}{Bedrock thermal layer}
   Models the temperature in a thin ($\tilde 1000$ km) layer a the top
   of the Earth's crust.
@@ -362,67 +607,6 @@
 
   FIXME: talk about inputs and outputs.
 }
-
-\section{Stress balance}
-\label{sec:stress-balance}
-
-\begin{frame}{Stress balance}
-  General organization of PISM's stress balance code (sliding +
-  deformation -> (u,v)), the hybrid, $w$ through incompressibility.
-
-  Rheology: Glen-type flow laws \emph{that have a viscosity form}.
-
-  Inputs and outputs (important!).
-\end{frame}
-
-\note{
-
-  Note to self: double-check that our strain heating computation is
-  correct: should use $w$, not $w_{\text{rel}}$.
-
-}
-
-\begin{frame}{Shallow ice approximation (SIA)}
-
-  Local in space (2D).
-
-  Bed smoother.
-\end{frame}
-
-\begin{frame}{Shallow shelf approximation (SSA)}
-
-  Mention that the system solved by PISM has the same size independent
-  from the current ice extent (trivial equations).
-
-  Nonlinear system of equations --- requires iteration. Describe the
-  type of iteration employed by PISM (Picard, linearizing viscosity).
-  Mention the alternative (Newton iteration in the FEM
-  implementation). Mention challenges of implementing the FEM solver:
-  domain shape.
-
-  Basal (sliding) velocity is \emph{not} prescribed.
-
-  Sliding laws.
-
-  Talk about boundary conditions, grounding line transition
-  (``grounded cell fraction'').
-
-  Challenges:
-  \begin{itemize}
-  \item stopping criterion
-  \item robustness
-  \item computational cost
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Basal yield stress models}
-  \begin{itemize}
-  \item Mohr-Coulomb
-  \item constant
-  \end{itemize}
-
-  Talk about inputs and outputs, tying this to hydrology.
-\end{frame}
 
 \section{Age}
 \label{sec:age}
