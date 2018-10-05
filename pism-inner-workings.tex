@@ -300,7 +300,6 @@
 
 }
 
-
 \begin{frame}
   \frametitle{SSA: implementation details}
 
@@ -393,10 +392,19 @@
 }
 
 \begin{frame}{Energy balance: boundary conditions}
-  \begin{itemize}
-  \item top surface: Dirichlet
-  \item bottom surface: Dirichlet or Neumann
-  \end{itemize}
+
+  \begin{columns}[c]
+    \begin{column}{0.5\linewidth}
+      \begin{itemize}
+      \item top: Dirichlet
+      \item bottom: Dirichlet or Neumann
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.5\linewidth}
+      \includegraphics[width=0.9\linewidth]{enthalpy-basal-bc}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \subsection{Bedrock thermal layer}
