@@ -360,6 +360,69 @@
   Talk about inputs and outputs, tying this to hydrology.
 \end{frame}
 
+\section{Energy balance}
+\label{sec:energy-balance}
+
+\begin{frame}{Energy balance in the ice volume}
+  \begin{itemize}
+  \item \emph{shallow} conduction-advection equation
+    \begin{equation}
+      \label{eq:1}
+  \rho_{i} \left( \diff{E}{t} + w\,\diff{E}{z} \right) - \diff{}{z}\left( K(E) \diff{E}{z} \right) = Q - \rho_{i} \left( u\,\diff{E}{x} + v\,\diff{E}{y} \right).
+    \end{equation}
+  \item non-linear conductivity (function of enthalpy)
+  \item implicit in the vertical dimension, explicit in horizontal
+  \item first order upwinding for advecion
+  \item has a CFL time step restriction using 3D $u$ and $v$
+    components of the ice velocity
+  \end{itemize}
+\end{frame}
+
+\note{
+  Mention the legacy model: temperature-based energy conservation.
+
+  Mention Aschwanden et al.
+
+  Talk about inputs and outputs, drainage.
+
+  Mention PISM's vertical coordinate.
+
+  Mention (or maybe add a slide about) initialization difficulties:
+  spinups, heuristics, data assimilation.
+
+}
+
+\begin{frame}{Energy balance: boundary conditions}
+  \begin{itemize}
+  \item top surface: Dirichlet
+  \item bottom surface: Dirichlet or Neumann
+  \end{itemize}
+\end{frame}
+
+\subsection{Bedrock thermal layer}
+\label{sec:bedrock}
+
+\begin{frame}{Bedrock thermal layer}
+  Models the temperature in a thin ($\tilde 1000$ km) layer a the top
+  of the Earth's crust.
+
+  \begin{itemize}
+  \item Assumes that this layer is \emph{shallow}: horizontal
+    conduction terms are ignored, i.e. columns of bedrock are treated
+    as independent.
+  \item Uses a regular grid in bedrock columns, fully implicit, no
+    time-step restriction.
+  \end{itemize}
+\end{frame}
+
+\note{
+  The bedrock thermal layer has the largest effect in simulations
+  with moving boundaries: edges of ice streams, grounding lines, and
+  grounded margins.
+
+  FIXME: talk about inputs and outputs.
+}
+
 \section{Geometry evolution}
 \label{sec:geometry-evolution}
 
@@ -544,69 +607,6 @@
 \end{frame}
 
 \note{FIXME: I need to say more about this.}
-
-\section{Energy balance}
-\label{sec:energy-balance}
-
-\begin{frame}{Energy balance in the ice volume}
-  \begin{itemize}
-  \item \emph{shallow} conduction-advection equation
-    \begin{equation}
-      \label{eq:1}
-  \rho_{i} \left( \diff{E}{t} + w\,\diff{E}{z} \right) - \diff{}{z}\left( K(E) \diff{E}{z} \right) = Q - \rho_{i} \left( u\,\diff{E}{x} + v\,\diff{E}{y} \right).
-    \end{equation}
-  \item non-linear conductivity (function of enthalpy)
-  \item implicit in the vertical dimension, explicit in horizontal
-  \item first order upwinding for advecion
-  \item has a CFL time step restriction using 3D $u$ and $v$
-    components of the ice velocity
-  \end{itemize}
-\end{frame}
-
-\note{
-  Mention the legacy model: temperature-based energy conservation.
-
-  Mention Aschwanden et al.
-
-  Talk about inputs and outputs, drainage.
-
-  Mention PISM's vertical coordinate.
-
-  Mention (or maybe add a slide about) initialization difficulties:
-  spinups, heuristics, data assimilation.
-
-}
-
-\begin{frame}{Energy balance: boundary conditions}
-  \begin{itemize}
-  \item top surface: Dirichlet
-  \item bottom surface: Dirichlet or Neumann
-  \end{itemize}
-\end{frame}
-
-\subsection{Bedrock thermal layer}
-\label{sec:bedrock}
-
-\begin{frame}{Bedrock thermal layer}
-  Models the temperature in a thin ($\tilde 1000$ km) layer a the top
-  of the Earth's crust.
-
-  \begin{itemize}
-  \item Assumes that this layer is \emph{shallow}: horizontal
-    conduction terms are ignored, i.e. columns of bedrock are treated
-    as independent.
-  \item Uses a regular grid in bedrock columns, fully implicit, no
-    time-step restriction.
-  \end{itemize}
-\end{frame}
-
-\note{
-  The bedrock thermal layer has the largest effect in simulations
-  with moving boundaries: edges of ice streams, grounding lines, and
-  grounded margins.
-
-  FIXME: talk about inputs and outputs.
-}
 
 \section{Age}
 \label{sec:age}
