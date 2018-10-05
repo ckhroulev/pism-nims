@@ -220,17 +220,22 @@
 \section{Time stepping}
 \label{sec:time-stepping}
 
-\begin{frame}{Explicit time stepping}
+\begin{frame}{Explicit time stepping in an ice sheet model}
 
   \begin{enumerate}
   \item use stress balance to compute velocity
     \begin{itemize}
     \item often: first get $(u,v)$, then $w$ from incompressibility
     \end{itemize}
-  \item somewhere in here do other processes: thermodynamics, basal melt, calving, \dots
-  \item decide on time-step $\Delta t$ from diffusivity $D$ \hfill (\emph{or: fixed} $\Delta t$)
-  \item from velocity, surface balance, and base balance do time-step of mass continuity equation to get $H_t$
-  \item update surface elevation: $h \gets h+H_t \Delta t$
+  \item update models of other physical processes: thermodynamics, basal melt, calving, etc
+  \item decide on time-step $\Delta t$
+    \begin{itemize}
+    \item using SIA diffusivity $D$, or
+    \item select a fixed time-step
+    \end{itemize}
+  \item from velocity, surface mass balance, and basal balance perform
+    a time-step of the mass continuity equation to get $\diff{H}{t}$
+  \item update surface elevation: $h \gets h + \diff{H}{t} \Delta t$
   \item repeat at 1.
   \end{enumerate}
 
@@ -262,18 +267,22 @@
 \label{sec:stress-balance}
 
 \begin{frame}{Stress balance}
-  General organization of PISM's stress balance code (sliding +
-  deformation -> (u,v)), the hybrid, $w$ through incompressibility.
 
-  Rheology: Glen-type flow laws \emph{that have a viscosity form}.
+  PISM's ``hybrid'' stress balance:
+  \begin{enumerate}
+  \item basal sliding (SSA)
+  \item deformational flow (SIA)
+  \end{enumerate}
 
-  Inputs and outputs (important!).
+  Vertical velocity is approximated using incompressibility of ice.
+
+  PISM supports \emph{that have a viscosity form}.
+
 \end{frame}
 
 \note{
 
-  Note to self: double-check that our strain heating computation is
-  correct: should use $w$, not $w_{\text{rel}}$.
+  Inputs and outputs (important!).
 
 }
 
@@ -327,13 +336,6 @@
 
 \end{frame}
 
-\note{
-
-  FIXME: talk about grounding line transition (``grounded cell
-  fraction'').
-
-}
-
 \begin{frame}
   \frametitle{SSA: implementation details}
 
@@ -357,15 +359,6 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{SSA: an alternative implementation approach}
-
-  Mention the alternative (Newton iteration in the FEM
-  implementation). Mention challenges of implementing the FEM solver:
-  domain shape.
-
-\end{frame}
-
-\begin{frame}
   \frametitle{Basal sliding laws}
 
   \begin{itemize}
@@ -386,8 +379,12 @@
 
 \begin{frame}{Basal yield stress models}
   \begin{itemize}
-  \item Mohr-Coulomb
   \item constant
+  \item Mohr-Coulomb
+    \begin{equation}
+      \label{eq:12}
+      \tau_c = c_{0} + (\tan\phi)\,N_{till}.
+    \end{equation}
   \end{itemize}
 
   Talk about inputs and outputs, tying this to hydrology.
