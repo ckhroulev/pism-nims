@@ -68,21 +68,19 @@
     \begin{column}{0.5\linewidth}
       PISM
       \begin{itemize}
-      \item<1-> uses a uniform
-      \item<2-> cell-centered Cartesian grid
-      \item<3-> and a parallel domain decomposition to avoid running out
+      \item<1-> uses a uniform cell-centered Cartesian grid
+      \item<2-> and a parallel domain decomposition to avoid running out
         of memory
-      \item<4-> dividing the grid into smaller sub-grids.
-      \item<5> Access to ``ghost'' points requires parallel communication.
+      \item<3-> dividing the grid into smaller sub-grids.
+      \item<4> Access to ``ghost'' points requires parallel communication.
       \end{itemize}
     \end{column}
 
     \begin{column}{0.5\linewidth}
-      \only<1>{\includegraphics[width=0.75\linewidth]{grid-1}}
-      \only<2>{\includegraphics[width=0.75\linewidth]{grid-2}}
-      \only<3>{\includegraphics[width=0.75\linewidth]{grid-3}}
-      \only<4>{\includegraphics[width=0.75\linewidth]{grid-4}}
-      \only<5>{\includegraphics[width=0.75\linewidth]{grid-5}}
+      \only<1>{\includegraphics[width=0.75\linewidth]{grid-2}}
+      \only<2>{\includegraphics[width=0.75\linewidth]{grid-3}}
+      \only<3>{\includegraphics[width=0.75\linewidth]{grid-4}}
+      \only<4>{\includegraphics[width=0.75\linewidth]{grid-5}}
     \end{column}
   \end{columns}
 
@@ -157,6 +155,49 @@
   changes in energy balance equations.
 }
 
+\section{Time stepping}
+\label{sec:time-stepping}
+
+\begin{frame}
+  \frametitle{Explicit time stepping in an ice sheet model}
+
+  \begin{enumerate}
+  \item use stress balance to compute velocity
+    \begin{itemize}
+    \item often: first get $(u,v)$, then $w$ from incompressibility
+    \end{itemize}
+  \item update models of other physical processes: thermodynamics, basal melt, calving, etc
+  \item decide on time-step $\Delta t$
+    \begin{itemize}
+    \item using SIA diffusivity $D$, or
+    \item select a fixed time-step
+    \end{itemize}
+  \item from velocity, surface mass balance, and basal balance perform
+    a time-step of the mass continuity equation to get $\diff{H}{t}$
+  \item update surface elevation: $h \gets h + \diff{H}{t} \Delta t$
+  \item repeat at 1.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{PISM's time step}
+  Update...
+  \begin{enumerate}
+  \item basal yield stress
+  \item stress balance (ice velocities)
+  \item the time step length using stability criteria
+  \item age of the ice
+  \item energy balance
+  \item ice geometry due to flow
+  \item sea level
+  \item sub-shelf boundary conditions
+  \item top-surface boundary conditions
+  \item ice geometry due to surface and basal mass balance
+  \item subglacial hydrology
+  \item bed deformation
+  \end{enumerate}
+\end{frame}
+
 \section{Sub-models}
 \label{sec:sub-models}
 
@@ -220,49 +261,6 @@
   \item computational costs
   \item modeling challenges
   \end{itemize}
-\end{frame}
-
-\section{Time stepping}
-\label{sec:time-stepping}
-
-\begin{frame}
-  \frametitle{Explicit time stepping in an ice sheet model}
-
-  \begin{enumerate}
-  \item use stress balance to compute velocity
-    \begin{itemize}
-    \item often: first get $(u,v)$, then $w$ from incompressibility
-    \end{itemize}
-  \item update models of other physical processes: thermodynamics, basal melt, calving, etc
-  \item decide on time-step $\Delta t$
-    \begin{itemize}
-    \item using SIA diffusivity $D$, or
-    \item select a fixed time-step
-    \end{itemize}
-  \item from velocity, surface mass balance, and basal balance perform
-    a time-step of the mass continuity equation to get $\diff{H}{t}$
-  \item update surface elevation: $h \gets h + \diff{H}{t} \Delta t$
-  \item repeat at 1.
-  \end{enumerate}
-\end{frame}
-
-\begin{frame}
-  \frametitle{PISM's time step}
-  Update...
-  \begin{enumerate}
-  \item basal yield stress
-  \item stress balance (ice velocities)
-  \item the time step length using stability criteria
-  \item age of the ice
-  \item energy balance
-  \item ice geometry due to flow
-  \item sea level
-  \item sub-shelf boundary conditions
-  \item top-surface boundary conditions
-  \item ice geometry due to surface and basal mass balance
-  \item subglacial hydrology
-  \item bed deformation
-  \end{enumerate}
 \end{frame}
 
 \section{Stress balance}
