@@ -212,7 +212,7 @@
 \label{sec:sub-models}
 
 \begin{frame}
-  \frametitle{Sub-models}
+  \frametitle{PISM consists of...}
 
   % PuBu
   \definecolor{levelo}{RGB}{5,112,176}
@@ -226,7 +226,7 @@
 
         \tikzstyle{level 1 concept}+=[font=\sf, sibling angle=40]
 
-        \node[concept] {PISM}
+        \node[concept] {PISM core managing initialization, time stepping, passing data between sub-models, saving requested diagnostic quantities, etc}
         [clockwise from=0]
         child[concept color=leveli]{
           node[concept]{Geometry evolution}
@@ -237,7 +237,7 @@
         }
         child[concept color=leveli]{
           node[concept]{Energy balance}
-          [clockwise from=-60]
+          [clockwise from=-40]
           child[concept color=levelii]{ node[concept]{Bedrock thermal layer}}
         }
         child[concept color=leveli]{ node[concept]{Stress balance} }
@@ -248,7 +248,7 @@
         child[concept color=leveli]{ node[concept]{Sub-shelf boundary conditions} }
         child[concept color=leveli]{
           node[concept]{Top surface boundary conditions}
-          [clockwise from=60]
+          [clockwise from=40]
           child[concept color=levelii]{ node[concept]{Atmosphere model} }
         }
         ;
@@ -545,7 +545,7 @@
 
   \begin{equation}
     \label{eq:3}
-    \Delta t \le \cdot \Delta x^{2} / D_{\text{max}}.
+    \Delta t \le \Delta x^{2} / D_{\text{max}}.
   \end{equation}
 
   First-order upwinding for the advective part of the flux gives
@@ -587,7 +587,7 @@
     \item Eigen calving
       \begin{equation}
         \label{eq:7}
-        c = K\; \dot{\epsilon}_{_+}\; \dot{\epsilon}_{_-}\quad\text{and}\quad\dot{\epsilon}_{_\pm}>0\:.
+        c = K\; \dot{\epsilon}_{+}\; \dot{\epsilon}_{-}\quad\text{and}\quad\dot{\epsilon}_{\pm}>0\:.
       \end{equation}
       See \emph{Kinematic first-order calving law implies
       potential for abrupt ice-shelf retreat} by Levermann et al.
