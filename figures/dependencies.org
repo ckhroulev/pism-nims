@@ -1,0 +1,68 @@
+#+BEGIN_SRC dot :file update-stress.png :tangle update.dot
+digraph {
+graph [layout=dot, ranksep=1, concentrate=yes];
+node [fontname=Arial, fontsize=12, shape=circle, fixedsize=yes, width=1];
+edge [fontname=Arial, fontsize=12]
+
+subgraph forcing {
+rank=min
+sea_level [label="Sea\nlevel"]
+surface [label="Surface\nprocesses"]
+ocean [label="Ice/ocean\ninterface"]
+bed [label="Bed\ndeformation"]
+}
+
+geometry [label="Geometry" color=black]
+
+{rank=same
+age [label="Age"]
+energy [label="Energy\nbalance" color=black]
+stress [label="Stress\nbalance" color=red]
+}
+
+{rank=same
+hydrology [label="Subglacial\nhydrology"]
+yield_stress [label="Basal\nyield\nstress"]
+}
+
+{edge [color=black]
+geometry -> bed
+geometry -> stress [label="ice\nflux"]
+geometry -> surface [label="surface\nmass balance"]
+geometry -> energy [label="basal\nmelt rate"]
+geometry -> ocean [label="sub-shelf\nmelt rate"]
+geometry -> sea_level [label="sea level\nelevation"]
+}
+//bed -> geometry
+
+{edge [color=red]
+stress -> yield_stress [label="basal\nyield\nstress"]
+stress -> ocean [label="melange\nback pressure\nfraction"]
+// stress -> geometry
+stress -> energy [label="ice\nenthalpy"]
+stress -> age [label="ice\nage"]
+}
+
+// yield_stress -> geometry
+yield_stress -> hydrology [label="water\nthickness", constraint=no]
+
+{edge [color=black]
+energy -> stress [label="ice\nvelocity"]
+energy -> stress [label="basal\nfrictional\nheating"]
+energy -> stress [label="strain\nheating"]
+energy -> ocean [label="sub-shelf\ntemperature"]
+energy -> hydrology [label="till\nwater\nthickness"]
+energy -> surface [label=" surface\ntemperature"]
+}
+
+// hydrology -> geometry
+hydrology -> energy [label="basal\nmelt rate"]
+hydrology -> stress [label="sliding\nspeed"]
+
+age -> stress [label="ice\nvelocity"]
+// age -> geometry
+}
+#+END_SRC
+
+#+RESULTS:
+[[file:update-stress.png]]
