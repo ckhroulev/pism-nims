@@ -6,3 +6,4 @@
 *.snm
 *.toc
 *.el
+/.DS_Store
