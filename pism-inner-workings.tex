@@ -108,8 +108,8 @@
   to deal with two kinds of free boundaries:
 
   \begin{itemize}
-  \item lateral (in the map plane)
   \item at the top surface
+  \item lateral (in the map plane)
   \end{itemize}
 \end{frame}
 
@@ -118,7 +118,7 @@
 }
 
 \begin{frame}
-  \frametitle{Free boundary at the top surface and the vertical coordinate}
+  \frametitle{Free boundary at the top surface}
   There are two common approaches:
   \begin{itemize}
   \item sigma-coordinate
@@ -143,12 +143,16 @@
     \only<1>{\includegraphics[width=\linewidth]{grid-vertical-pism}}
     \only<2>{\includegraphics[width=\linewidth]{grid-vertical-pism-boundary}}
   \end{center}
+
+  \begin{itemize}
+  \item does not affect numerical stability
+  \item negative effects can be reduced by increasing grid resolution
+  \end{itemize}
 \end{frame}
 
 \note{
   Sigma-coordinate: top boundary follows ice geometry as it
-  evolves. Requires modifying most equations (except for shallow,
-  two-dimensional ones).
+  evolves. Requires modifying 3D equations.
 
   The surface $z=0$ follows the base of the ice. In general,
   $z=C$ is not a plane; see the Manual for the corresponding
@@ -177,6 +181,12 @@
   \item update surface elevation: $h \gets h + \diff{H}{t} \Delta t$
   \item repeat at 1.
   \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why explicit?}
+
+  Implicit time-stepping is hard.
 \end{frame}
 
 \begin{frame}
