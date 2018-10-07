@@ -291,11 +291,37 @@
 
 \end{frame}
 
-\note{
+\begin{frame}
+  \frametitle{Stress balance: inputs and outputs}
 
-  Inputs and outputs (important!).
+  \begin{columns}[t]
+    \begin{column}{0.5\linewidth}
+      \textbf{Inputs}
 
-}
+      \begin{itemize}
+      \item geometry
+      \item basal yield stress
+      \item melange back pressure fraction
+      \item ice enthalpy
+      \item age of the ice
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\linewidth}
+      \textbf{Outputs}
+
+      \begin{itemize}
+      \item 2D advective velocity
+      \item 2D diffusive flux
+      \item maximum diffusivity
+      \item max time-step allowed by the CFL criterion
+      \item $u$, $v$, and $w$ components of the ice velocity
+      \item basal frictional heating
+      \item volumetric strain heating
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+\end{frame}
 
 \subsection{SIA}
 \label{sec:sia}
@@ -386,8 +412,32 @@
     \end{equation}
   \end{itemize}
 
-  Talk about inputs and outputs, tying this to hydrology.
 \end{frame}
+
+\begin{frame}
+  \frametitle{Basal strength: inputs and outputs}
+
+  \begin{columns}[t]
+    \begin{column}{0.5\linewidth}
+      \textbf{Inputs}
+
+      \begin{itemize}
+      \item geometry
+      \item till water thickness
+      \item subglacial water thickness
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\linewidth}
+      \textbf{Outputs}
+
+      \begin{itemize}
+      \item basal material yield stress
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
 
 \begin{frame}
   \frametitle{Grounding line treatment}
@@ -440,7 +490,7 @@
   \item \emph{shallow} conduction-advection equation
     \begin{equation}
       \label{eq:1}
-  \rho_{i} \left( \diff{E}{t} + w\,\diff{E}{z} \right) - \diff{}{z}\left( K(E) \diff{E}{z} \right) = Q - \rho_{i} \left( u\,\diff{E}{x} + v\,\diff{E}{y} \right).
+      \rho_{i} \left( \diff{E}{t} + w\,\diff{E}{z} \right) - \diff{}{z}\left( K(E) \diff{E}{z} \right) = Q - \rho_{i} \left( u\,\diff{E}{x} + v\,\diff{E}{y} \right).
     \end{equation}
   \item non-linear conductivity (function of enthalpy)
   \item implicit in the vertical dimension, explicit in horizontal
@@ -450,14 +500,28 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Energy balance: initialization difficulties}
+
+  Available measurements of the ice temperature and water content are
+  \emph{very} sparse both in time and in space.
+
+  Possible work-arounds:
+  \begin{itemize}
+  \item fill using heuristics
+  \item use a spin-up procedure to improve on heuristics by including
+    ice dynamics and the past climate
+  \item data assimulation (read: use fields provided by a different
+    model)
+  \end{itemize}
+\end{frame}
+
 \note{
   Mention the legacy model: temperature-based energy conservation.
 
   Mention Aschwanden et al.
 
-  Talk about inputs and outputs, drainage.
-
-  Mention PISM's vertical coordinate.
+  Talk about drainage.
 
   Mention (or maybe add a slide about) initialization difficulties:
   spinups, heuristics, data assimilation.
@@ -481,6 +545,39 @@
   \end{columns}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Energy balance model: inputs and outputs}
+
+  \begin{columns}[t]
+    \begin{column}{0.5\linewidth}
+      \textbf{Inputs}
+
+      \begin{itemize}
+      \item geometry
+      \item basal frictional heating
+      \item ice shelves: basal temperature
+      \item grounded areas
+        \begin{itemize}
+        \item upward heat flux from the bedrock thermal layer
+        \item till water thickness
+        \end{itemize}
+      \item top surface boundary conditions (enthalpy or temperature and
+        liquid water fraction)
+      \item ice velocity
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\linewidth}
+      \textbf{Outputs}
+
+      \begin{itemize}
+      \item ice enthalpy
+      \item grounded areas: basal melt rate
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
 \subsection{Bedrock thermal layer}
 \label{sec:bedrock}
 
@@ -496,15 +593,38 @@
   \item Uses a regular grid in bedrock columns, fully implicit, no
     time-step restriction.
   \end{itemize}
+
+  Bootstrapping: use geothermal flux and top surface temperature to
+  form a linear-in-depth temperature distribution.
 \end{frame}
 
 \note{
   The bedrock thermal layer has the largest effect in simulations
   with moving boundaries: edges of ice streams, grounding lines, and
   grounded margins.
-
-  FIXME: talk about inputs and outputs.
 }
+
+\begin{frame}
+  \frametitle{Bedrock thermal layer: inputs and outputs}
+
+  \begin{columns}[t]
+    \begin{column}{0.5\linewidth}
+      \textbf{Inputs}
+
+      \begin{itemize}
+      \item geothermal flux
+      \item temperature of the top surface of the layer
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\linewidth}
+      \textbf{Outputs}
+
+      \begin{itemize}
+      \item upward heat flux through the top surface of the layer
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
 
 \section{Geometry evolution}
 \label{sec:geometry-evolution}
@@ -662,12 +782,35 @@
     half-space plus purely-elastic, spherical, layered,
     self-gravitating earth)
 
-    \medskip
-    Only the first component (elastic plate lithosphere over viscous
-    half-space) is used in most of simulations.
+    \begin{itemize}
+    \item most of simulations use only the first component (elastic
+      plate lithosphere over viscous half-space)
+    \item can be initialized using measured uplift rates
+    \end{itemize}
   \end{itemize}
+\end{frame}
 
-  FIXME: Inputs, outputs, time scale
+\begin{frame}
+  \frametitle{Bed deformation: inputs and outputs}
+
+  \begin{columns}[t]
+    \begin{column}{0.5\linewidth}
+      \textbf{Inputs}
+
+      \begin{itemize}
+      \item ice thickness
+      \item sea surface elevation
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\linewidth}
+      \textbf{Outputs}
+
+      \begin{itemize}
+      \item bed elevation
+      \item bed uplift
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}
