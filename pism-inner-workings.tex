@@ -443,8 +443,10 @@
   \frametitle{Grounding line treatment}
 
   \only<1>{
+    Looking at a 2D cell at the grounding line (in the map plane):
+
     \begin{center}
-      \includegraphics[width=0.4\linewidth]{grounded-cell-fraction}
+      \includegraphics[width=0.33\linewidth]{grounded-cell-fraction}
     \end{center}
   }
 
@@ -508,7 +510,7 @@
 
   Possible work-arounds:
   \begin{itemize}
-  \item fill using heuristics
+  \item fill using heuristics (PISM has two)
   \item use a spin-up procedure to improve on heuristics by including
     ice dynamics and the past climate
   \item data assimulation (read: use fields provided by a different
@@ -878,6 +880,33 @@
   \item ``Distributed'' model: same as ``routing,'' but with a
     physical model of the water pressure
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Subglacial hydrology: inputs and outputs}
+
+  \begin{columns}[t]
+    \begin{column}{0.5\linewidth}
+      \textbf{Inputs}
+
+      \begin{itemize}
+      \item geometry
+      \item water input rate due to drainage from the top surface of the ice
+      \item basal melt rate
+      \item ice sliding speed
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\linewidth}
+      \textbf{Outputs}
+
+      \begin{itemize}
+      \item till water thickness
+      \item subglacial (transportable) water thickness
+      \item overburden pressure
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
 \end{frame}
 
 \begin{frame}

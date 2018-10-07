@@ -1,4 +1,4 @@
-#+BEGIN_SRC dot :file update-stress.png :tangle update.dot
+#+BEGIN_SRC dot :file update.png :tangle update.dot
 digraph {
 graph [layout=dot, ranksep=1, concentrate=yes];
 node [fontname=Arial, fontsize=12, shape=circle, fixedsize=yes, width=1];
@@ -12,12 +12,12 @@ ocean [label="Ice/ocean\ninterface"]
 bed [label="Bed\ndeformation"]
 }
 
-geometry [label="Geometry" color=black]
+geometry [label="Geometry" color=black fontcolor=black]
 
 {rank=same
 age [label="Age"]
-energy [label="Energy\nbalance" color=black]
-stress [label="Stress\nbalance" color=red]
+energy [label="Energy\nbalance" color=black fontcolor=black]
+stress [label="Stress\nbalance" color=black fontcolor=black]
 }
 
 {rank=same
@@ -25,7 +25,7 @@ hydrology [label="Subglacial\nhydrology"]
 yield_stress [label="Basal\nyield\nstress"]
 }
 
-{edge [color=black]
+{edge [color=black fontcolor=black]
 geometry -> bed
 geometry -> stress [label="ice\nflux"]
 geometry -> surface [label="surface\nmass balance"]
@@ -35,7 +35,7 @@ geometry -> sea_level [label="sea level\nelevation"]
 }
 //bed -> geometry
 
-{edge [color=red]
+{edge [color=black, fontcolor=black]
 stress -> yield_stress [label="basal\nyield\nstress"]
 stress -> ocean [label="melange\nback pressure\nfraction"]
 // stress -> geometry
@@ -46,7 +46,7 @@ stress -> age [label="ice\nage"]
 // yield_stress -> geometry
 yield_stress -> hydrology [label="water\nthickness", constraint=no]
 
-{edge [color=black]
+{edge [color=black fontcolor=black]
 energy -> stress [label="ice\nvelocity"]
 energy -> stress [label="basal\nfrictional\nheating"]
 energy -> stress [label="strain\nheating"]
@@ -65,4 +65,4 @@ age -> stress [label="ice\nvelocity"]
 #+END_SRC
 
 #+RESULTS:
-[[file:update-stress.png]]
+[[file:update.png]]
