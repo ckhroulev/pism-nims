@@ -58,156 +58,6 @@
 
 \setbeamertemplate{background canvas}{}
 
-\section{Overview}
-\label{sec:overview}
-
-\begin{frame}
-  \frametitle{The basics}
-
-  \begin{columns}
-    \begin{column}{0.5\linewidth}
-      PISM
-      \begin{itemize}
-      \item<1-> uses a uniform cell-centered Cartesian grid
-      \item<2-> and a parallel domain decomposition to avoid running out
-        of memory
-      \item<3-> dividing the grid into smaller sub-grids.
-      \item<4> Access to ``ghost'' points requires parallel communication.
-      \end{itemize}
-    \end{column}
-
-    \begin{column}{0.5\linewidth}
-      \only<1>{\includegraphics[width=0.75\linewidth]{grid-2}}
-      \only<2>{\includegraphics[width=0.75\linewidth]{grid-3}}
-      \only<3>{\includegraphics[width=0.75\linewidth]{grid-4}}
-      \only<4>{\includegraphics[width=0.75\linewidth]{grid-5}}
-    \end{column}
-  \end{columns}
-
-\end{frame}
-
-\note{
-  The fact that is uses a uniform grid means that it has to
-  keep track of more unknowns compared to a model using an
-  adaptive mesh, but its output is easier to analyze because it
-  does not require post-processing.
-
-  Compute the number of unknowns in a high-ish resolution
-  Greenland simulation.
-
-  A figure showing domain decomposition would be useful.
-
-  This is where I would mention ``ghosts'' and that we ne
-  ensure that they are up to date, if I thought that it needs
-  mentioning.
-}
-
-\begin{frame}
-  \frametitle{Free boundaries}
-  Both ice thickness and its extent can change, meaning that PISM has
-  to deal with two kinds of free boundaries:
-
-  \begin{itemize}
-  \item at the top surface
-  \item lateral (in the map plane)
-  \end{itemize}
-\end{frame}
-
-\note{
-  Lateral: a cell is either icy or not, except for ``partially-filled'' cells.
-}
-
-\begin{frame}
-  \frametitle{Free boundary at the top surface}
-  There are two common approaches:
-  \begin{itemize}
-  \item sigma-coordinate
-  \item ``immersed'' top boundary plus a transformed vertical
-    coordinate
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Vertical sigma coordinate}
-  \begin{center}
-    \includegraphics[width=\linewidth]{grid-vertical-sigma}
-
-    \textbf{This approach is used by some other models (e.g. CISM,
-      SICOPOLIS), but not by PISM.}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{PISM's vertical grid}
-  \begin{center}
-    \only<1>{\includegraphics[width=\linewidth]{grid-vertical-pism}}
-    \only<2>{\includegraphics[width=\linewidth]{grid-vertical-pism-boundary}}
-  \end{center}
-
-  \begin{itemize}
-  \item does not affect numerical stability
-  \item negative effects can be reduced by increasing grid resolution
-  \end{itemize}
-\end{frame}
-
-\note{
-  Sigma-coordinate: top boundary follows ice geometry as it
-  evolves. Requires modifying 3D equations.
-
-  The surface $z=0$ follows the base of the ice. In general,
-  $z=C$ is not a plane; see the Manual for the corresponding
-  changes in energy balance equations.
-}
-
-\section{Time stepping}
-\label{sec:time-stepping}
-
-\begin{frame}
-  \frametitle{Explicit time stepping in an ice sheet model}
-
-  \begin{enumerate}
-  \item use stress balance to compute velocity
-    \begin{itemize}
-    \item often: first get $(u,v)$, then $w$ from incompressibility
-    \end{itemize}
-  \item update models of other physical processes: thermodynamics, basal melt, calving, etc
-  \item decide on time-step $\Delta t$
-    \begin{itemize}
-    \item using SIA diffusivity $D$, or
-    \item select a fixed time-step
-    \end{itemize}
-  \item from velocity, surface mass balance, and basal balance perform
-    a time-step of the mass continuity equation to get $\diff{H}{t}$
-  \item update surface elevation: $h \gets h + \diff{H}{t} \Delta t$
-  \item repeat at 1.
-  \end{enumerate}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Why explicit?}
-
-  Implicit time-stepping is hard.
-\end{frame}
-
-\begin{frame}
-  \frametitle{PISM's time step}
-  Update...
-  \begin{enumerate}
-  \item basal yield stress
-  \item stress balance (ice velocities)
-  \item the time step length using stability criteria
-  \item age of the ice
-  \item energy balance
-  \item ice geometry due to flow
-  \item sea level
-  \item sub-shelf boundary conditions
-  \item top-surface boundary conditions
-  \item ice geometry due to surface and basal mass balance
-  \item subglacial hydrology
-  \item bed deformation
-  \end{enumerate}
-\end{frame}
-
 \section{Sub-models}
 \label{sec:sub-models}
 
@@ -257,12 +107,43 @@
   \end{center}
 \end{frame}
 
-\note{
-  These are the parts PISM consists of, conceptually.
-}
-
 \begin{frame}
-  \frametitle{Universal considerations}
+  \frametitle{Interaction between sub-models}
+
+  \only<1,3>{
+    \begin{columns}
+      \begin{column}{0.45\linewidth}
+        \includegraphics[width=\linewidth]{update-1}
+      \end{column}
+      \begin{column}{0.5\linewidth}
+        Sub-models use quantities shown on here, and
+        \begin{itemize}
+        \item all sub-models use ice thickness,
+        \item or a combination of
+          \begin{itemize}
+          \item ice thickness,
+          \item bed elevation,
+          \item sea level elevation.
+          \end{itemize}
+        \end{itemize}
+        \only<3>{This is why implicit time-stepping is hard.}
+      \end{column}
+    \end{columns}
+  }
+
+  \only<2>{
+    \begin{columns}
+      \begin{column}{0.5\linewidth}
+        \includegraphics[width=\linewidth]{tangled-mess}
+      \end{column}
+      \begin{column}{0.5\linewidth}
+        Which, at a first glance, looks very much like this.
+      \end{column}
+    \end{columns}
+  }
+\end{frame}
+
+\note{
   \begin{itemize}
   \item inputs and outputs
   \item initialization
@@ -271,24 +152,234 @@
   \item computational costs
   \item modeling challenges
   \end{itemize}
+}
+
+\section{Time stepping}
+\label{sec:time-stepping}
+
+\begin{frame}
+  \frametitle{Explicit time stepping in an ice sheet model}
+
+  \begin{enumerate}
+  \item use stress balance to compute velocity
+    \begin{itemize}
+    \item often: first get $(u,v)$, then $w$ from incompressibility
+    \end{itemize}
+  \item update models of other physical processes: thermodynamics, basal melt, calving, etc
+  \item decide on time-step $\Delta t$
+    \begin{itemize}
+    \item using SIA diffusivity $D$, or
+    \item select a fixed time-step
+    \end{itemize}
+  \item from velocity, surface mass balance, and basal balance perform
+    a time-step of the mass continuity equation to get $\diff{H}{t}$
+  \item update surface elevation: $h \gets h + \diff{H}{t} \Delta t$
+  \item repeat at 1.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{PISM's time step}
+  Update...
+  \begin{enumerate}
+  \item basal yield stress
+  \item stress balance (ice velocities)
+  \item the time step length using stability criteria
+  \item age of the ice
+  \item energy balance
+  \item ice geometry due to flow
+  \item sea level
+  \item sub-shelf boundary conditions
+  \item top-surface boundary conditions
+  \item ice geometry due to surface and basal mass balance
+  \item subglacial hydrology
+  \item bed deformation
+  \end{enumerate}
+\end{frame}
+
+
+\section{Geometry evolution}
+\label{sec:geometry-evolution}
+
+\begin{frame}
+  \frametitle{Geometry evolution model}
+
+  \begin{columns}
+    \begin{column}{0.45\linewidth}
+      \includegraphics[width=\linewidth]{update-2-geometry}
+    \end{column}
+    \begin{column}{0.5\linewidth}
+      PISM's geometry evolution model:
+      \begin{itemize}
+      \item mass transport (modeling flow)
+      \item calving
+      \item iceberg elimination
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Mass transport}
+  \begin{itemize}
+  \item uses the finite-volume approach
+  \item tailored to take advantage to PISM's split between
+    ``diffusive'' and ``advective'' ice flow
+  \item ice flow is diffusive, so numerical diffusivity does not cause
+    much trouble
+  \item surface and basal mass balance may be negative and extra care
+    is needed to preserve non-negativity of ice thickness
+  \end{itemize}
+\end{frame}
+
+\note{ Alternative: coupled stress balance and mass continuity with an
+  inequality constraint, i.e. the variational inequality formulation.
+}
+
+\begin{frame}
+  \frametitle{Stability considerations}
+
+  The SIA flow is diffusive, so preserving staility of explicit time
+  stepping forces us to respect diffusion-related time step
+  restrictions.
+
+  Recall that
+  \begin{align}
+    \label{eq:2}
+    \frac{\partial H}{\partial t} &= S - \nabla \cdot (Q + \mathbf{U}_b H),\\
+    Q &= -D \nabla (b + H).\\
+  \end{align}
+
+  This applies to other models, even if they don't use the shallow ice
+  approximation.
+
+  \begin{equation}
+    \label{eq:3}
+    \Delta t \le \Delta x^{2} / D_{\text{max}}.
+  \end{equation}
+
+  First-order upwinding for the advective part of the flux gives
+  \begin{equation}
+    \label{eq:6}
+    \Delta t \le \frac{1}{\max|u| / dx + \max|v| / dy}.
+  \end{equation}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Free boundary at the calving front}
+
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{albrecht-martin-figure-1}
+
+    \includegraphics[width=0.8\textwidth]{albrecht-martin-figure-2}
+  \end{center}
+
+  See T. Albrecht, M. Martin, M. Haseloff, R. Winkelmann, and A.
+  Levermann. Parameterization for subgrid-scale motion of ice-shelf
+  calving fronts. \emph{The Cryosphere}, 5:35–44, 2011 for details.
+\end{frame}
+
+\subsection{Calving}
+\label{sec:calving}
+
+\begin{frame}
+  \frametitle{Calving}
+
+  \begin{itemize}
+  \item Geometric criteria
+    \begin{itemize}
+    \item ice thickness threshold
+    \item floating ice
+    \item prescribed maximum shelf extent
+    \end{itemize}
+  \item Stress-based
+    \begin{itemize}
+    \item Eigen calving
+      \begin{equation}
+        \label{eq:7}
+        c = K\; \dot{\epsilon}_{+}\; \dot{\epsilon}_{-}\quad\text{and}\quad\dot{\epsilon}_{\pm}>0\:.
+      \end{equation}
+      See \emph{Kinematic first-order calving law implies
+      potential for abrupt ice-shelf retreat} by Levermann et al.
+    \item von Mises
+      \begin{equation}
+        \label{eq:8}
+        c = |\mathbf{u}| \frac{\tilde{\sigma}}{\sigma_{max}},
+      \end{equation}
+      See \emph{Modeling of Store Gletscher’s calving dynamics, West
+        Greenland, in response to ocean thermal forcing.} by Morlighem
+      et al.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\note{
+
+  Challenges: strain rates estimated using finite differences may be
+  of poor quality.
+}
+
+\subsection{Iceberg elimination}
+\label{sec:iceberg-elimination}
+
+\begin{frame}
+  \frametitle{Iceberg elimination}
+
+  Why do we need this?
+
+  \begin{itemize}
+  \item The SSA stress balance determines the sliding velocity of
+    patches of floating ice \emph{up to rigid body motions} (see C.
+    Schoof, \emph{A variational approach to ice stream flow})
+  \item We need to keep track of an ice sheet's discharge into the
+    ocean.
+  \end{itemize}
+
+  Where would an ``iceberg'' (isolated patch of floating ice) come
+  from?
+  \begin{itemize}
+  \item calving
+  \item sea level changes
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Iceberg elimination: technical details}
+
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{icebergs.png}
+  \end{center}
+
+  \begin{itemize}
+  \item uses a 2-scan connected component labeling algorithm (serial code)
+  \item computationally cheap
+  \end{itemize}
 \end{frame}
 
 \section{Stress balance}
 \label{sec:stress-balance}
 
 \begin{frame}
-  \frametitle{Stress balance}
+  \frametitle{Stress balance model}
 
-  PISM's ``hybrid'' stress balance:
-  \begin{enumerate}
-  \item basal sliding (SSA)
-  \item deformational flow (SIA)
-  \end{enumerate}
+  \begin{columns}
+    \begin{column}{0.45\linewidth}
+\includegraphics[width=\linewidth]{update-3-stress}
+    \end{column}
+    \begin{column}{0.5\linewidth}
+      PISM's ``hybrid'' stress balance:
+      \begin{enumerate}
+      \item basal sliding (SSA)
+      \item deformational flow (SIA)
+      \end{enumerate}
 
-  Vertical velocity is approximated using incompressibility of ice.
+      \medskip
+      Vertical velocity is approximated using incompressibility of ice.
 
-  PISM supports Glen-like flow laws \emph{that have a viscosity form}.
-
+      \medskip
+      PISM supports Glen-like flow laws \emph{that have a viscosity form}.
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}
@@ -628,146 +719,6 @@
   \end{columns}
 \end{frame}
 
-\section{Geometry evolution}
-\label{sec:geometry-evolution}
-
-\begin{frame}
-  \frametitle{Mass transport}
-  \begin{itemize}
-  \item uses the finite-volume approach
-  \item tailored to take advantage to PISM's split between
-    ``diffusive'' and ``advective'' ice flow
-  \item ice flow is diffusive, so numerical diffusivity does not cause
-    much trouble
-  \item surface and basal mass balance may be negative and extra care
-    is needed to preserve non-negativity of ice thickness
-  \end{itemize}
-\end{frame}
-
-\note{ Alternative: coupled stress balance and mass continuity with an
-  inequality constraint, i.e. the variational inequality formulation.
-}
-
-\begin{frame}
-  \frametitle{Stability considerations}
-
-  The SIA flow is diffusive, so preserving staility of explicit time
-  stepping forces us to respect diffusion-related time step
-  restrictions.
-
-  Recall that
-  \begin{align}
-    \label{eq:2}
-    \frac{\partial H}{\partial t} &= S - \nabla \cdot (Q + \mathbf{U}_b H),\\
-    Q &= -D \nabla (b + H).\\
-  \end{align}
-
-  This applies to other models, even if they don't use the shallow ice
-  approximation.
-
-  \begin{equation}
-    \label{eq:3}
-    \Delta t \le \Delta x^{2} / D_{\text{max}}.
-  \end{equation}
-
-  First-order upwinding for the advective part of the flux gives
-  \begin{equation}
-    \label{eq:6}
-    \Delta t \le \frac{1}{\max|u| / dx + \max|v| / dy}.
-  \end{equation}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Free boundary at the calving front}
-
-  \begin{center}
-    \includegraphics[width=0.8\textwidth]{albrecht-martin-figure-1}
-
-    \includegraphics[width=0.8\textwidth]{albrecht-martin-figure-2}
-  \end{center}
-
-  See T. Albrecht, M. Martin, M. Haseloff, R. Winkelmann, and A.
-  Levermann. Parameterization for subgrid-scale motion of ice-shelf
-  calving fronts. \emph{The Cryosphere}, 5:35–44, 2011 for details.
-\end{frame}
-
-\subsection{Calving}
-\label{sec:calving}
-
-\begin{frame}
-  \frametitle{Calving}
-
-  \begin{itemize}
-  \item Geometric criteria
-    \begin{itemize}
-    \item ice thickness threshold
-    \item floating ice
-    \item prescribed maximum shelf extent
-    \end{itemize}
-  \item Stress-based
-    \begin{itemize}
-    \item Eigen calving
-      \begin{equation}
-        \label{eq:7}
-        c = K\; \dot{\epsilon}_{+}\; \dot{\epsilon}_{-}\quad\text{and}\quad\dot{\epsilon}_{\pm}>0\:.
-      \end{equation}
-      See \emph{Kinematic first-order calving law implies
-      potential for abrupt ice-shelf retreat} by Levermann et al.
-    \item von Mises
-      \begin{equation}
-        \label{eq:8}
-        c = |\mathbf{u}| \frac{\tilde{\sigma}}{\sigma_{max}},
-      \end{equation}
-      See \emph{Modeling of Store Gletscher’s calving dynamics, West
-        Greenland, in response to ocean thermal forcing.} by Morlighem
-      et al.
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\note{
-
-  Challenges: strain rates estimated using finite differences may be
-  of poor quality.
-}
-
-\subsection{Iceberg elimination}
-\label{sec:iceberg-elimination}
-
-\begin{frame}
-  \frametitle{Iceberg elimination}
-
-  Why do we need this?
-
-  \begin{itemize}
-  \item The SSA stress balance determines the sliding velocity of
-    patches of floating ice \emph{up to rigid body motions} (see C.
-    Schoof, \emph{A variational approach to ice stream flow})
-  \item We need to keep track of an ice sheet's discharge into the
-    ocean.
-  \end{itemize}
-
-  Where would an ``iceberg'' (isolated patch of floating ice) come
-  from?
-  \begin{itemize}
-  \item calving
-  \item sea level changes
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Iceberg elimination: technical details}
-
-  \begin{center}
-    \includegraphics[width=0.9\textwidth]{icebergs.png}
-  \end{center}
-
-  \begin{itemize}
-  \item uses a 2-scan connected component labeling algorithm (serial code)
-  \item computationally cheap
-  \end{itemize}
-\end{frame}
-
 \section{Bed deformation}
 \label{sec:bed-deformation}
 
@@ -925,5 +876,107 @@
   Cite Ed's paper.
 
 }
+
+
+\section{Technical details}
+
+\begin{frame}
+  \frametitle{The basics}
+
+  \begin{columns}
+    \begin{column}{0.5\linewidth}
+      PISM
+      \begin{itemize}
+      \item<1-> uses a uniform cell-centered Cartesian grid
+      \item<2-> and a parallel domain decomposition to avoid running out
+        of memory
+      \item<3-> dividing the grid into smaller sub-grids.
+      \item<4> Access to ``ghost'' points requires parallel communication.
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.5\linewidth}
+      \only<1>{\includegraphics[width=0.75\linewidth]{grid-2}}
+      \only<2>{\includegraphics[width=0.75\linewidth]{grid-3}}
+      \only<3>{\includegraphics[width=0.75\linewidth]{grid-4}}
+      \only<4>{\includegraphics[width=0.75\linewidth]{grid-5}}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\note{
+  The fact that is uses a uniform grid means that it has to
+  keep track of more unknowns compared to a model using an
+  adaptive mesh, but its output is easier to analyze because it
+  does not require post-processing.
+
+  Compute the number of unknowns in a high-ish resolution
+  Greenland simulation.
+
+  A figure showing domain decomposition would be useful.
+
+  This is where I would mention ``ghosts'' and that we ne
+  ensure that they are up to date, if I thought that it needs
+  mentioning.
+}
+
+\begin{frame}
+  \frametitle{Free boundaries}
+  Both ice thickness and its extent can change, meaning that PISM has
+  to deal with two kinds of free boundaries:
+
+  \begin{itemize}
+  \item at the top surface
+  \item lateral (in the map plane)
+  \end{itemize}
+\end{frame}
+
+\note{
+  Lateral: a cell is either icy or not, except for ``partially-filled'' cells.
+}
+
+\begin{frame}
+  \frametitle{Free boundary at the top surface}
+  There are two common approaches:
+  \begin{itemize}
+  \item sigma-coordinate
+  \item ``immersed'' top boundary plus a transformed vertical
+    coordinate
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vertical sigma coordinate}
+  \begin{center}
+    \includegraphics[width=\linewidth]{grid-vertical-sigma}
+
+    \textbf{This approach is used by some other models (e.g. CISM,
+      SICOPOLIS), but not by PISM.}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{PISM's vertical grid}
+  \begin{center}
+    \only<1>{\includegraphics[width=\linewidth]{grid-vertical-pism}}
+    \only<2>{\includegraphics[width=\linewidth]{grid-vertical-pism-boundary}}
+  \end{center}
+
+  \begin{itemize}
+  \item does not affect numerical stability
+  \item negative effects can be reduced by increasing grid resolution
+  \end{itemize}
+\end{frame}
+
+\note{
+  Sigma-coordinate: top boundary follows ice geometry as it
+  evolves. Requires modifying 3D equations.
+
+  The surface $z=0$ follows the base of the ice. In general,
+  $z=C$ is not a plane; see the Manual for the corresponding
+  changes in energy balance equations.
+}
+
 
 \end{document}
