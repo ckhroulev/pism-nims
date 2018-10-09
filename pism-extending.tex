@@ -1,0 +1,235 @@
+\documentclass[hide notes,intlimits]{beamer}
+
+\mode<presentation>
+{
+  \usetheme[footline]{PISMshade}
+  \setbeamercovered{transparent}
+}
+
+% load packages
+\usepackage{multimedia}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{pdfpages}
+\usepackage[multidot]{grffile}
+\usepackage{listings}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstset{ 
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}; should come as last argument
+  basicstyle=\tt\tiny,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,	                   % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=C++,                    % the language of the code
+  morekeywords={*,...},            % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+  tabsize=2,	                   % sets default tabsize to 2 spaces
+  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{shadows}
+\usetikzlibrary{mindmap}
+
+\definecolor{dark red}{HTML}{E41A1C}
+\definecolor{dark green}{HTML}{4DAF4A}
+\definecolor{dark violet}{HTML}{984EA3}
+\definecolor{dark blue}{HTML}{084594}
+\definecolor{dark orange}{HTML}{FF7F00}
+\definecolor{light blue}{HTML}{377EB8}
+\definecolor{light red}{HTML}{FB9A99}
+\definecolor{light violet}{HTML}{CAB2D6}
+
+\setbeamercolor{boxed}{fg=black,bg=light blue!25}
+\graphicspath{{figures/}}
+
+\setbeamertemplate{background canvas}
+{
+  \tikz{\node[inner sep=0pt,opacity=1.0]
+    {\includegraphics[width=\paperwidth]{pism_beamer_shade_bg}};}
+}
+
+\newcommand{\diff}[2]{\frac{\partial #1}{\partial #2}}
+
+% title page
+\title{Customizing and extending PISM: the basics}
+
+\author{C.~Khrulev}
+\institute{University of Alaska Fairbanks}
+\date{}
+
+\subject{The Parallel Ice Sheet Model}
+
+\begin{document}
+
+% insert titlepage
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\setbeamertemplate{background canvas}{}
+
+\section{Sub-models}
+\label{sec:sub-models}
+
+\begin{frame}
+  \frametitle{PISM consists of...}
+
+  % PuBu
+  \definecolor{levelo}{RGB}{5,112,176}
+  \definecolor{leveli}{RGB}{116,169,207}
+  \definecolor{levelii}{RGB}{189,201,225}
+  \definecolor{leveliii}{RGB}{241,238,246}
+
+  \begin{center}
+    \scalebox{0.55}{
+      \begin{tikzpicture}[mindmap, concept color=levelo, font=\sf, text=black]
+
+        \tikzstyle{level 1 concept}+=[font=\sf, sibling angle=40]
+
+        \node[concept] {PISM core managing initialization, time stepping, passing data between sub-models, saving requested diagnostic quantities, etc}
+        [clockwise from=0]
+        child[concept color=leveli]{
+          node[concept]{Geometry evolution}
+          [clockwise from=60]
+          child[concept color=levelii]{ node[concept]{Mass transport} }
+          child[concept color=levelii]{ node[concept]{Calving} }
+          child[concept color=levelii]{ node[concept]{Iceberg elimination} }
+        }
+        child[concept color=leveli]{
+          node[concept]{Energy balance}
+          [clockwise from=-40]
+          child[concept color=levelii]{ node[concept]{Bedrock thermal layer}}
+        }
+        child[concept color=leveli]{ node[concept]{Stress balance} }
+        child[concept color=leveli]{ node[concept]{Bed deformation} }
+        child[concept color=leveli]{ node[concept]{Age} }
+        child[concept color=leveli]{ node[concept]{Subglacial hydrology} }
+        child[concept color=leveli]{ node[concept]{Sea level forcing} }
+        child[concept color=leveli]{ node[concept]{Sub-shelf boundary conditions} }
+        child[concept color=leveli]{
+          node[concept]{Top surface boundary conditions}
+          [clockwise from=40]
+          child[concept color=levelii]{ node[concept]{Atmosphere model} }
+        }
+        ;
+      \end{tikzpicture}
+    }                           %scalebox
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Components}
+
+  Most sub-models in PISM are derived from the ``Component'' class.
+
+  They need to be able to
+  \begin{itemize}
+  \item initialize
+  \item compute maximum time step
+  \item update the state (``step'')
+  \item ``define'' the model state (NetCDF variables)
+  \item write the model state to a file
+  \item<2> provide scalar diagnostic quantities
+  \item<2> provide spatially-variable diagnostic quantities
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Initialization}
+
+  Two kinds of initializaion:
+  \begin{itemize}
+  \item re-starting from a saved state
+  \item starting from a (possible) incomplete set of input data
+    (``bootstrapping'')
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,fragile]
+  \frametitle{Initialization: an example}
+\begin{lstlisting}
+void ConstantYieldStress::init_impl() {
+  m_log->message(2, "* Initializing the constant basal yield stress model...\n");
+
+  InputOptions opts = process_input_options(m_grid->com, m_config);
+  const double tauc = m_config->get_double("basal_yield_stress.constant.value");
+
+  switch (opts.type) {
+  case INIT_RESTART:
+    m_basal_yield_stress.read(opts.filename, opts.record);
+    break;
+  case INIT_BOOTSTRAP:
+    m_basal_yield_stress.regrid(opts.filename, OPTIONAL, tauc);
+    break;
+  case INIT_OTHER:
+  default:
+    // Set the constant value.
+    m_basal_yield_stress.set(tauc);
+  }
+
+  regrid("ConstantYieldStress", m_basal_yield_stress);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{PISM's computational grid}
+  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Working with 2D and 3D fields}
+
+  Without ghosts:
+\begin{lstlisting}
+IceModelVec2S temperature(grid, "air_temp", WITHOUT_GHOSTS);
+
+IceModelVec::AccessList access{&temperature};
+
+for (Points p(grid); p; p.next()) {
+  const int i = p.i(), j = p.j();
+
+  temperature(i, j) = i + j;
+}
+\end{lstlisting}
+
+  With ghosts:
+\begin{lstlisting}
+IceModelVec2S temperature(grid, "air_temp", WITH_GHOSTS, 1);
+
+IceModelVec::AccessList access{&temperature};
+
+for (PointsWithGhosts p(grid); p; p.next()) {
+  const int i = p.i(), j = p.j();
+
+  temperature(i, j) = i + j;
+}
+\end{lstlisting}
+  
+\end{frame}
+
+\end{document}
