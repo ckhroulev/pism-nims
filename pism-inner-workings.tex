@@ -229,6 +229,11 @@
 
 \begin{frame}
   \frametitle{Mass transport}
+
+  \begin{equation*}
+    \frac{\partial H}{\partial t} = S - \nabla \cdot (Q + \mathbf{U}_b H)
+  \end{equation*}
+
   \begin{itemize}
   \item uses the finite-volume approach
   \item tailored to take advantage to PISM's split between
@@ -261,16 +266,16 @@
   This applies to other models, even if they don't use the shallow ice
   approximation.
 
-  \begin{equation}
+  \begin{equation*}
     \label{eq:3}
     \Delta t \le \Delta x^{2} / D_{\text{max}}.
-  \end{equation}
+  \end{equation*}
 
   First-order upwinding for the advective part of the flux gives
-  \begin{equation}
+  \begin{equation*}
     \label{eq:6}
     \Delta t \le \frac{1}{\max|u| / dx + \max|v| / dy}.
-  \end{equation}
+  \end{equation*}
 \end{frame}
 
 \begin{frame}
@@ -303,17 +308,17 @@
   \item Stress-based
     \begin{itemize}
     \item Eigen calving
-      \begin{equation}
+      \begin{equation*}
         \label{eq:7}
         c = K\; \dot{\epsilon}_{+}\; \dot{\epsilon}_{-}\quad\text{and}\quad\dot{\epsilon}_{\pm}>0\:.
-      \end{equation}
+      \end{equation*}
       See \emph{Kinematic first-order calving law implies
       potential for abrupt ice-shelf retreat} by Levermann et al.
     \item von Mises
-      \begin{equation}
+      \begin{equation*}
         \label{eq:8}
         c = |\mathbf{u}| \frac{\tilde{\sigma}}{\sigma_{max}},
-      \end{equation}
+      \end{equation*}
       See \emph{Modeling of Store Gletscher’s calving dynamics, West
         Greenland, in response to ocean thermal forcing.} by Morlighem
       et al.
@@ -390,38 +395,6 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Stress balance: inputs and outputs}
-
-  \begin{columns}[t]
-    \begin{column}{0.5\linewidth}
-      \textbf{Inputs}
-
-      \begin{itemize}
-      \item geometry
-      \item basal yield stress
-      \item melange back pressure fraction
-      \item ice enthalpy
-      \item age of the ice
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.5\linewidth}
-      \textbf{Outputs}
-
-      \begin{itemize}
-      \item 2D advective velocity
-      \item 2D diffusive flux
-      \item maximum diffusivity
-      \item max time-step allowed by the CFL criterion
-      \item $u$, $v$, and $w$ components of the ice velocity
-      \item basal frictional heating
-      \item volumetric strain heating
-      \end{itemize}
-    \end{column}
-  \end{columns}
-
-\end{frame}
-
 \subsection{SIA}
 \label{sec:sia}
 
@@ -470,11 +443,12 @@
 
   Here both $\bar \nu$ and $\tau_{b}$ are nonlinear functions of the ice velocity.
 
-  Boundary conditions at lateral boundaries:
-  \begin{equation}
+  \medskip
+  At lateral boundaries we have:
+  \begin{equation*}
     \label{eq:5}
     \left.t\right|_{\text{cf}} \cdot \mathbf{n} = -p_{\text{o}} \mathbf{n}.
-  \end{equation}
+  \end{equation*}
 
   Note: basal (sliding) velocity is \emph{not} prescribed.
 
@@ -486,30 +460,38 @@
   \begin{itemize}
   \item Coulomb
 
-    \begin{equation}
+    \begin{equation*}
       \label{eq:11}
       |\boldsymbol{\tau}_b| \le \tau_c \quad \text{and} \quad \boldsymbol{\tau}_b =
       - \tau_c \frac{\mathbf{u}}{|\mathbf{u}|} \quad\text{if and only if}\quad |\mathbf{u}| > 0.
-    \end{equation}
+    \end{equation*}
   \item Pseudo-plastic
-  \begin{equation}
+  \begin{equation*}
     \label{eq:10}
     \boldsymbol{\tau}_b =  - \tau_c \frac{\mathbf{u}}{u_{\text{threshold}}^q |\mathbf{u}|^{1-q}},
-  \end{equation}
+  \end{equation*}
   \end{itemize}
 \end{frame}
 
 \begin{frame}
   \frametitle{Basal strength: yield stress models}
 
-  \begin{itemize}
-  \item constant
-  \item Mohr-Coulomb
-    \begin{equation}
-      \label{eq:12}
-      \tau_c = c_{0} + (\tan\phi)\,N_{till}.
-    \end{equation}
-  \end{itemize}
+  \begin{columns}
+    \begin{column}{0.5\linewidth}
+      \begin{itemize}
+      \item constant
+      \item Mohr-Coulomb
+        \begin{equation*}
+          \label{eq:12}
+          \tau_c = c_{0} + (\tan\phi)\,N_{till}.
+        \end{equation*}
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.5\linewidth}
+      \includegraphics[width=\linewidth]{sand-pile}
+    \end{column}
+  \end{columns}
 
 \end{frame}
 
@@ -566,20 +548,53 @@
   PISM uses Picard iteration to solve the non-linear system
   corresponding to the discretization of the SSA system of equations:
 
-  \begin{equation}
+  \begin{equation*}
     \label{eq:4}
     A(U^{(k)}) U^{(k+1)} = b.
-  \end{equation}
+  \end{equation*}
 
   Mention that the system solved by PISM has the same size independent
   from the current ice extent (trivial equations).
 
+  \medskip
   Challenges:
   \begin{itemize}
   \item stopping criterion
   \item robustness
   \item computational cost
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Stress balance: inputs and outputs}
+
+  \begin{columns}[t]
+    \begin{column}{0.5\linewidth}
+      \textbf{Inputs}
+
+      \begin{itemize}
+      \item geometry
+      \item basal yield stress
+      \item melange back pressure fraction
+      \item ice enthalpy
+      \item age of the ice
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\linewidth}
+      \textbf{Outputs}
+
+      \begin{itemize}
+      \item 2D advective velocity
+      \item 2D diffusive flux
+      \item maximum diffusivity
+      \item max time-step allowed by the CFL criterion
+      \item $u$, $v$, and $w$ components of the ice velocity
+      \item basal frictional heating
+      \item volumetric strain heating
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
 \end{frame}
 
 \section{Energy balance}
@@ -607,10 +622,10 @@
   \frametitle{Energy balance in the ice volume}
   \begin{itemize}
   \item \emph{shallow} conduction-advection equation
-    \begin{equation}
+    \begin{equation*}
       \label{eq:1}
       \rho_{i} \left( \diff{E}{t} + w\,\diff{E}{z} \right) - \diff{}{z}\left( K(E) \diff{E}{z} \right) = Q - \rho_{i} \left( u\,\diff{E}{x} + v\,\diff{E}{y} \right).
-    \end{equation}
+    \end{equation*}
   \item non-linear conductivity (function of enthalpy)
   \item implicit in the vertical dimension, explicit in horizontal
   \item first order upwinding for advecion
@@ -625,6 +640,7 @@
   Available measurements of the ice temperature and water content are
   \emph{very} sparse both in time and in space.
 
+  \medskip
   Possible work-arounds:
   \begin{itemize}
   \item fill using heuristics (PISM has two)
@@ -753,10 +769,10 @@
 
   \begin{itemize}
   \item pointwise isostasy
-    \begin{equation}
+    \begin{equation*}
       \label{eq:9}
       b(t,x,y) = b(0,x,y) - f \left[H(t,x,y) - H(0,x,y)\right].
-    \end{equation}
+    \end{equation*}
   \item Lingle-Clark model (elastic plate lithosphere over viscous
     half-space plus purely-elastic, spherical, layered,
     self-gravitating earth)
@@ -767,6 +783,25 @@
     \item can be initialized using measured uplift rates
     \end{itemize}
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Lingle-Clark bed deformation model}
+
+  \begin{itemize}
+  \item the fundamental equation includes a pseudo-differential
+    operator define using Fourier transform
+  \item Fourier spectral collocation method with periodic boundaries
+    on an extended domain
+  \item no time step restriction
+  \item can be initialized using measured uplift rates
+  \item relatively cheap computationally
+  \item serial code
+  \end{itemize}
+
+  See E. Bueler, C. S. Lingle, and J. A. Kallen-Brown. Fast
+  computation of a viscoelastic deformable Earth model for ice sheet
+  simulation. \emph{Ann. Glaciol}., 46:97–105, 2007
 \end{frame}
 
 \begin{frame}
@@ -790,25 +825,6 @@
       \end{itemize}
     \end{column}
   \end{columns}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Lingle-Clark bed deformation model}
-
-  \begin{itemize}
-  \item the fundamental equation includes a pseudo-differential
-    operator define using Fourier transform
-  \item Fourier spectral collocation method with periodic boundaries
-    on an extended domain
-  \item no time step restriction
-  \item can be initialized using measured uplift rates
-  \item relatively cheap computationally
-  \item serial code
-  \end{itemize}
-
-  See E. Bueler, C. S. Lingle, and J. A. Kallen-Brown. Fast
-  computation of a viscoelastic deformable Earth model for ice sheet
-  simulation. \emph{Ann. Glaciol}., 46:97–105, 2007
 \end{frame}
 
 \section{Environmental forcing}
@@ -835,12 +851,13 @@
 \begin{frame}
   \frametitle{Age}
 
-  Numerical diffusivity is a concern.
+  \begin{itemize}
+  \item numerical diffusivity is a concern
+  \item implementation details are the same as in the energy balance code.
+  \item boundary conditions: $0$ at the top surface and at the bottom
+    surface with freezing conditions
+  \end{itemize}
 
-  Implementation details are the same as in the energy balance code.
-
-  Boundary conditions: 0 at the top surface and at the bottom surface
-  with freezing conditions.
 \end{frame}
 
 \section{Subglacial hydrology}
