@@ -257,11 +257,11 @@
   restrictions.
 
   Recall that
-  \begin{align}
+  \begin{align*}
     \label{eq:2}
     \frac{\partial H}{\partial t} &= S - \nabla \cdot (Q + \mathbf{U}_b H),\\
     Q &= -D \nabla (b + H).\\
-  \end{align}
+  \end{align*}
 
   This applies to other models, even if they don't use the shallow ice
   approximation.
@@ -390,7 +390,10 @@
       Vertical velocity is approximated using incompressibility of ice.
 
       \medskip
-      PISM supports Glen-like flow laws \emph{that have a viscosity form}.
+      PISM supports Glen-like flow laws \emph{that have a viscosity form}:
+      \begin{equation*}
+        \sigma_{ij}' = 2 \nu(D,T,\omega,P,d)\,D_{ij}.
+      \end{equation*}
     \end{column}
   \end{columns}
 \end{frame}
@@ -401,12 +404,12 @@
 \begin{frame}
   \frametitle{Shallow ice approximation (SIA)}
 
-  \begin{align}
+  \begin{align*}
     \label{eq:2}
     \frac{\partial H}{\partial t} &= S - \nabla \cdot (Q + \mathbf{U}_b H),\\
     Q &= -D \nabla (b + H),\\
     D &= 2\int_b^h F(z)P(z)(h-z)dz.
-  \end{align}
+  \end{align*}
 
   Can be computed at each grid point independently (using neighboring
   points for FD approximations).
@@ -434,12 +437,12 @@
 \begin{frame}
   \frametitle{Shallow shelf approximation (SSA)}
 
-  \begin{align}
+  \begin{align*}
     -\left[ 2\bar\nu H\left( 2u_{x} + v_{y}\right)\right]_{x} - \left[\bar\nu
     H\left(u_{y}+v_{x} \right) \right]_{y} - \tau_{(b)1} &= - \rho gH h_{x} \\
     -\left[ \bar\nu H\left( u_{y} + v_{x} \right)\right]_{x} - \left[2\bar\nu
     H\left(u_{x}+2v_{y}  \right) \right]_{y} - \tau_{(b)2} &= -\rho gH h_{y}
-  \end{align}
+  \end{align*}
 
   Here both $\bar \nu$ and $\tau_{b}$ are nonlinear functions of the ice velocity.
 
