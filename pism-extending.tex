@@ -245,6 +245,42 @@ temperature.update_ghosts();
 \end{lstlisting}
 
   With ghosts:
+
+\begin{lstlisting}
+IceModelVec2S temperature(grid, "air_temp", WITH_GHOSTS, 1);
+
+IceModelVec::AccessList access{&temperature};
+
+for (Points p(grid); p; p.next()) {
+  const int i = p.i(), j = p.j();
+
+  temperature(i, j) = i + j;
+}
+
+temperature.update_ghosts();
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Working with 2D and 3D fields}
+
+  Without ghosts:
+\begin{lstlisting}
+IceModelVec2S temperature(grid, "air_temp", WITHOUT_GHOSTS);
+
+IceModelVec::AccessList access{&temperature};
+
+for (Points p(grid); p; p.next()) {
+  const int i = p.i(), j = p.j();
+
+  temperature(i, j) = i + j;
+}
+
+temperature.update_ghosts();
+\end{lstlisting}
+
+  With ghosts:
+
 \begin{lstlisting}
 IceModelVec2S temperature(grid, "air_temp", WITH_GHOSTS, 1);
 
@@ -256,7 +292,7 @@ for (PointsWithGhosts p(grid); p; p.next()) {
   temperature(i, j) = i + j;
 }
 \end{lstlisting}
-  
+
 \end{frame}
 
 \begin{frame}[fragile]
