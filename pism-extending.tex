@@ -91,9 +91,6 @@
 
 \setbeamertemplate{background canvas}{}
 
-\section{Sub-models}
-\label{sec:sub-models}
-
 \begin{frame}
   \frametitle{PISM consists of...}
 
@@ -161,7 +158,7 @@
 \begin{frame}
   \frametitle{Initialization}
 
-  Two kinds of initializaion:
+  Two kinds of initialization:
   \begin{itemize}
   \item re-starting from a saved state
   \item starting from a (possible) incomplete set of input data
@@ -197,8 +194,36 @@ void ConstantYieldStress::init_impl() {
 \end{frame}
 
 \begin{frame}
-  \frametitle{PISM's computational grid}
-  
+  \frametitle{Allocating 2D and 3D fields}
+
+  \begin{itemize}
+  \item 2D scalar: \texttt{IceModelVec2S}
+  \item 2D vector: \texttt{IceModelVec2V}
+  \item 2D integer mask: \texttt{IceModelVec2Int}
+  \item 2D integer cell type mask: \texttt{IceModelVec2CellType}
+  \item 3D scalar: \texttt{IceModelVec3}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Working with 2D and 3D fields}
+
+  \begin{columns}
+    \begin{column}{0.5\linewidth}
+    Sub-domain without ``ghosts''
+    \begin{center}
+      \includegraphics[width=0.75\linewidth]{grid-4}
+    \end{center}
+    \end{column}
+
+    \begin{column}{0.5\linewidth}
+    Sub-domain with ``ghosts''
+      \begin{center}
+      \includegraphics[width=0.75\linewidth]{grid-5}
+    \end{center}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -215,6 +240,8 @@ for (Points p(grid); p; p.next()) {
 
   temperature(i, j) = i + j;
 }
+
+temperature.update_ghosts();
 \end{lstlisting}
 
   With ghosts:
@@ -230,6 +257,272 @@ for (PointsWithGhosts p(grid); p; p.next()) {
 }
 \end{lstlisting}
   
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Cell type mask}
+
+  The cell type mask is often obtained from the \texttt{Geometry}
+  object as \texttt{geometry.cell\_type}.
+
+  \medskip
+\begin{lstlisting}
+  bool ocean(int i, int j) const;
+  bool grounded(int i, int j) const;
+  bool icy(int i, int j) const;
+  bool grounded_ice(int i, int j) const;
+  bool floating_ice(int i, int j) const;
+  bool ice_free(int i, int j) const;
+  bool ice_free_ocean(int i, int j) const;
+  bool ice_free_land(int i, int j);
+  //! Ice margin (ice-filled with at least one of four neighbors ice-free).
+  bool ice_margin(int i, int j) const;
+  //! Ice-free margin (at least one of four neighbors has ice).
+  bool next_to_ice(int i, int j) const;
+  bool next_to_floating_ice(int i, int j) const;
+  bool next_to_grounded_ice(int i, int j) const;
+  bool next_to_ice_free_land(int i, int j) const;
+  bool next_to_ice_free_ocean(int i, int j) const;
+
+\end{lstlisting}
+\end{frame}
+
+\newcommand{\var}[2]{ {#1}_{\text{#2}} }
+\newcommand{\h}[1]{ \var{h}{#1} }
+\newcommand{\T}[1]{ \var{T}{#1} }
+\newcommand{\m}[1]{ \var{m}{#1} }
+
+\begin{frame}
+  \frametitle{Parameterizing surface temperature}
+  \begin{align*}
+    \diff{T}{h} &= (\T{max} - \T{min}) / (\h{max} - \h{min})\\
+    \begin{split}T(x,y) &=
+      \begin{cases}
+        \T{min}, & h(x,y) \le \h{min}, \\
+        \T{min} + \diff{T}{h} \, (h(x,y) - \h{min}), & \h{min} < h(x,y) < \h{max}, \\
+        \T{max}, & \h{max} \le h(x,y).
+      \end{cases}
+    \end{split}\\
+  \end{align*}
+\end{frame}
+
+ \begin{frame}
+  \frametitle{Parameterizing surface mass balance}
+  \begin{align*}
+    \diff{\m{abl}}{h} &= -\m{min} / (\h{max} - \h{min})\\
+    \diff{\m{acl}}{h} &= \m{max} / (\h{max} - \h{min})\\
+    \begin{split}m(x,y) &=
+      \begin{cases}
+        \m{min}, & h(x,y) \le \h{min}, \\
+        \diff{\m{abl}}{h} \, (h(x,y) - h_{\text{ELA}}), &  \h{min} < h(x,y) < \h{max}, \\
+        \diff{\m{acl}}{h} \, (h(x,y) - h_{\text{ELA}}), & \h{min} < h(x,y) < \h{max}, \\
+        \m{max}, & \h{max} \le h(x,y).
+      \end{cases}\end{split}
+  \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Elevation dependent T and SMB}
+\begin{lstlisting}
+class Elevation : public SurfaceModel {
+public:
+  Elevation(IceGrid::ConstPtr grid, std::shared_ptr<atmosphere::AtmosphereModel> input);
+private:
+  void init_impl(const Geometry &geometry);
+  void update_impl(const Geometry &geometry, double t, double dt);
+
+  MaxTimestep max_timestep_impl(double t) const;
+
+  const IceModelVec2S& mass_flux_impl() const;
+  const IceModelVec2S& temperature_impl() const;
+
+  void compute_mass_flux(const IceModelVec2S &surface, IceModelVec2S &result) const;
+  void compute_temperature(const IceModelVec2S &surface, IceModelVec2S &result) const;
+
+  double m_T_min, m_T_max, m_z_T_min, m_z_T_max;
+  double m_M_min, m_M_max, m_M_limit_min, m_M_limit_max, m_z_M_min, m_z_ELA, m_z_M_max;
+
+  IceModelVec2S::Ptr m_mass_flux;
+  IceModelVec2S::Ptr m_temperature;
+};
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Elevation-dependent T and SMB: allocation}
+
+\begin{lstlisting}
+///// Elevation-dependent temperature and surface mass balance.
+Elevation::Elevation(IceGrid::ConstPtr grid, std::shared_ptr<atmosphere::AtmosphereModel> input)
+  : SurfaceModel(grid) {
+  (void) input;
+
+  m_temperature = allocate_temperature(grid);
+  m_mass_flux   = allocate_mass_flux(grid);
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+IceModelVec2S::Ptr SurfaceModel::allocate_temperature(IceGrid::ConstPtr grid) {
+
+  IceModelVec2S::Ptr result(new IceModelVec2S(grid, "ice_surface_temp", WITHOUT_GHOSTS));
+
+  result->set_attrs("climate_forcing",
+                    "temperature of the ice at the ice surface but below firn processes",
+                    "Kelvin", "");
+
+  result->metadata().set_doubles("valid_range", {0.0, 323.15}); // [0C, 50C]
+
+  return result;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile,fragile]
+  \frametitle{Elevation-dependent T and SMB: initialization}
+
+\begin{lstlisting}
+void Elevation::init_impl(const Geometry &geometry) {
+  (void) geometry;
+
+  bool limits_set = false;
+
+  m_log->message(2,
+                 "* Initializing the constant-in-time surface processes model Elevation...\n");
+
+  units::Converter K(m_sys, "Celsius", "Kelvin");
+  // options
+  {
+    // ice surface temperature
+    {
+      options::RealList IST("-ice_surface_temp", "ice surface temperature parameterization",
+                            {-5.0, 0.0, 1325.0, 1350.0});
+
+      if (IST->size() != 4) {
+        throw RuntimeError(PISM_ERROR_LOCATION, "option -ice_surface_temp requires an argument"
+                           " (comma-separated list of 4 numbers)");
+      }
+      m_T_min   = K(IST[0]);
+      m_T_max   = K(IST[1]);
+      m_z_T_min = IST[2];
+      m_z_T_max = IST[3];
+    }
+
+  // more code processing command-line options (omitted)
+  }
+}
+
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Elevation-dependent T and SMB: update}
+\begin{lstlisting}
+MaxTimestep Elevation::max_timestep_impl(double t) const {
+  (void) t;
+  return MaxTimestep("surface 'elevation'");
+}
+
+void Elevation::update_impl(const Geometry &geometry, double t, double dt) {
+  (void) t;
+  (void) dt;
+
+  compute_mass_flux(geometry.ice_surface_elevation, *m_mass_flux);
+  compute_temperature(geometry.ice_surface_elevation, *m_temperature);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Parameterizing mass flux}
+\begin{lstlisting}
+void Elevation::compute_mass_flux(const IceModelVec2S &surface,
+                                  IceModelVec2S &result) const {
+  double dabdz = -m_M_min/(m_z_ELA - m_z_M_min), dacdz = m_M_max/(m_z_M_max - m_z_ELA);
+
+  IceModelVec::AccessList list{&result, &surface};
+
+    for (Points p(*m_grid); p; p.next()) {
+      const int i = p.i(), j = p.j();
+
+      double z = surface(i, j);
+
+      if (z < m_z_M_min) {
+        result(i, j) = m_M_limit_min;
+      }
+      else if ((z >= m_z_M_min) and (z < m_z_ELA)) {
+        result(i, j) = dabdz * (z - m_z_ELA);
+      }
+      else if ((z >= m_z_ELA) and (z <= m_z_M_max)) {
+        result(i, j) = dacdz * (z - m_z_ELA);
+      }
+      else if (z > m_z_M_max) {
+        result(i, j) = m_M_limit_max;
+      }
+      else {
+        throw RuntimeError(PISM_ERROR_LOCATION,
+                           "Elevation::compute_mass_flux: HOW DID I GET HERE?");
+      }
+    }
+
+  // convert from m second-1 ice equivalent to kg m-2 s-1:
+  result.scale(m_config->get_double("constants.ice.density"));
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Parameterizing surface temperature}
+\begin{lstlisting}
+void Elevation::compute_temperature(const IceModelVec2S &surface,
+                                    IceModelVec2S &result) const {
+  IceModelVec::AccessList list{&result, &surface};
+
+  double dTdz = (m_T_max - m_T_min)/(m_z_T_max - m_z_T_min);
+
+  ParallelSection loop(m_grid->com);
+  try {
+    for (Points p(*m_grid); p; p.next()) {
+      const int i = p.i(), j = p.j();
+
+      double z = surface(i, j);
+
+      if (z <= m_z_T_min) {
+        result(i, j) = m_T_min;
+      }
+      else if ((z > m_z_T_min) and (z < m_z_T_max)) {
+        result(i, j) = m_T_min + dTdz * (z - m_z_T_min);
+      }
+      else if (z >= m_z_T_max) {
+        result(i, j) = m_T_max;
+      }
+      else {
+        throw RuntimeError(PISM_ERROR_LOCATION,
+                           "Elevation::compute_temperature: HOW DID I GET HERE?");
+      }
+    }
+  } catch (...) {
+    loop.failed();
+  }
+  loop.check();
+}
+
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Providing results to the rest of PISM}
+\begin{lstlisting}
+
+const IceModelVec2S &Elevation::mass_flux_impl() const {
+  return *m_mass_flux;
+}
+
+const IceModelVec2S &Elevation::temperature_impl() const {
+  return *m_temperature;
+}
+
+\end{lstlisting}
 \end{frame}
 
 \end{document}
