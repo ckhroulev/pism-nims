@@ -833,12 +833,24 @@
 \begin{frame}
   \frametitle{Environmental forcing}
 
-  Sub-models providing boundary ``climatic''
+  Sub-models providing boundary (usually climatic) forcing
 
   \begin{itemize}
   \item Top surface
+    \begin{itemize}
+    \item mass flux
+    \item temperature
+    \item liquid water fracion
+    \end{itemize}
   \item Bottom surface
+    \begin{itemize}
+    \item geothermal flux
+    \end{itemize}
   \item Shelf base
+    \begin{itemize}
+    \item shelf base temperature
+    \item shelf base mass flux
+    \end{itemize}
   \item Sea level
   \end{itemize}
 \end{frame}
@@ -850,6 +862,16 @@
 
 \begin{frame}
   \frametitle{Age}
+
+  \begin{equation*}
+    \frac{\partial \tau}{\partial t} + u \frac{\partial \tau}{\partial x}
+    + v \frac{\partial \tau}{\partial y} + w \frac{\partial \tau}{\partial z} = 1
+  \end{equation*}
+
+  Because the velocity field is incompressible, $\nabla \cdot (u,v,w) = 0$, and so
+  \begin{equation*}
+    \frac{\partial \tau}{\partial t} + \nabla \left( (u,v,w) \tau \right) = 1.
+  \end{equation*}
 
   \begin{itemize}
   \item numerical diffusivity is a concern
