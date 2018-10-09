@@ -473,22 +473,27 @@
   \end{itemize}
 \end{frame}
 
+\newcommand{\red}[1]{{\color{red} #1}}
+
 \begin{frame}
   \frametitle{Basal strength: yield stress models}
 
   \begin{columns}
-    \begin{column}{0.5\linewidth}
+    \begin{column}{0.6\linewidth}
       \begin{itemize}
       \item constant
       \item Mohr-Coulomb
-        \begin{equation*}
-          \label{eq:12}
-          \tau_c = c_{0} + (\tan\phi)\,N_{till}.
-        \end{equation*}
+        \begin{align*}
+          \tau_c &= c_{0} + (\tan\phi)\,N_{till},\\
+          N_{till} &= \min\left\{\red{P_o}, N_0 \left(\frac{\delta \red{P_o}}{N_0}\right)^{\red{s}} 10^{(e_0/C_c) (1 - \red{s})}\right\}.
+        \end{align*}
+
+        See \emph{Basal mechanics of Ice Stream B, West Antarctica 1.
+          Till mechanics} by Tulaczyk et al.
       \end{itemize}
     \end{column}
 
-    \begin{column}{0.5\linewidth}
+    \begin{column}{0.4\linewidth}
       \includegraphics[width=\linewidth]{sand-pile}
     \end{column}
   \end{columns}
