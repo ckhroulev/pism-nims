@@ -151,17 +151,6 @@
 
 \end{frame}
 
-\note{
-  \begin{itemize}
-  \item inputs and outputs
-  \item initialization
-  \item ``bootstrapping'' (initialization from incomplete input data)
-  \item time stepping restrictions
-  \item computational costs
-  \item modeling challenges
-  \end{itemize}
-}
-
 \section{Time stepping}
 \label{sec:time-stepping}
 
@@ -176,7 +165,7 @@
   \item update models of other physical processes: thermodynamics, basal melt, calving, etc
   \item decide on time-step $\Delta t$
     \begin{itemize}
-    \item using SIA diffusivity $D$, or
+    \item using adaptive time stepping (SIA diffusivity, the CFL criterion, etc), or
     \item select a fixed time-step
     \end{itemize}
   \item from velocity, surface mass balance, and basal balance perform
@@ -244,10 +233,6 @@
     is needed to preserve non-negativity of ice thickness
   \end{itemize}
 \end{frame}
-
-\note{ Alternative: coupled stress balance and mass continuity with an
-  inequality constraint, i.e. the variational inequality formulation.
-}
 
 \begin{frame}
   \frametitle{Stability considerations}
@@ -325,12 +310,6 @@
     \end{itemize}
   \end{itemize}
 \end{frame}
-
-\note{
-
-  Challenges: strain rates estimated using finite differences may be
-  of poor quality.
-}
 
 \subsection{Iceberg elimination}
 \label{sec:iceberg-elimination}
@@ -426,9 +405,8 @@
   \item reduces diffusivity, making longer time steps possible
   \end{itemize}
 
-  See the User's Manual and C. Schoof. The effect of basal topography
-  on ice sheet dynamics. \emph{Continuum Mech. Thermodyn.},
-  15:295–307, 2003 for details.
+  See the User's Manual and \emph{The effect of basal topography
+  on ice sheet dynamics} by C. Schoof. for details.
 \end{frame}
 
 \subsection{SSA}
@@ -561,8 +539,8 @@
     A(U^{(k)}) U^{(k+1)} = b.
   \end{equation*}
 
-  Mention that the system solved by PISM has the same size independent
-  from the current ice extent (trivial equations).
+  \medskip Note: the system solved by PISM has the same size
+  independent from the current ice extent.
 
   \medskip
   Challenges:
@@ -659,18 +637,6 @@
   \end{itemize}
 \end{frame}
 
-\note{
-  Mention the legacy model: temperature-based energy conservation.
-
-  Mention Aschwanden et al.
-
-  Talk about drainage.
-
-  Mention (or maybe add a slide about) initialization difficulties:
-  spinups, heuristics, data assimilation.
-
-}
-
 \begin{frame}
   \frametitle{Energy balance: boundary conditions}
 
@@ -736,16 +702,7 @@
   \item Uses a regular grid in bedrock columns, fully implicit, no
     time-step restriction.
   \end{itemize}
-
-  Bootstrapping: use geothermal flux and top surface temperature to
-  form a linear-in-depth temperature distribution.
 \end{frame}
-
-\note{
-  The bedrock thermal layer has the largest effect in simulations
-  with moving boundaries: edges of ice streams, grounding lines, and
-  grounded margins.
-}
 
 \begin{frame}
   \frametitle{Bedrock thermal layer: inputs and outputs}
@@ -861,8 +818,6 @@
   \end{itemize}
 \end{frame}
 
-\note{FIXME: I need to say more about this.}
-
 \section{Age}
 \label{sec:age}
 
@@ -941,13 +896,6 @@
     subglacial water transport in channels)
   \end{itemize}
 \end{frame}
-
-\note{
-
-  Cite Ed's paper.
-
-}
-
 
 \section{Technical details}
 
